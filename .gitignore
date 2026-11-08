@@ -1,6 +1,8 @@
 node_modules/
 .env
 .env.local
+atlas-credentials.env
+*.env
 build/
 dist/
 .DS_Store
