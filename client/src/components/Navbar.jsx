@@ -21,6 +21,9 @@ export default function Navbar() {
                     <Link to="/" className="hover:text-blue-600 transition flex items-center gap-1.5 font-semibold text-blue-600">
                         <ShoppingBag className="w-4 h-4" /> Marketplace Ads
                     </Link>
+                    <Link to="/my-listings" className="hover:text-blue-600 transition">
+                        My Listings
+                    </Link>
                 </nav>
 
                 {/* 右侧：登录与发帖按钮 */}
@@ -33,7 +36,7 @@ export default function Navbar() {
                     </Link>
 
                     <Link
-                        to="/"
+                        to="/create-listing"
                         className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm hover:shadow transition"
                     >
                         <PlusCircle className="w-4 h-4" /> Post Free Ad
