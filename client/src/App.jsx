@@ -5,6 +5,8 @@ import Login from './pages/Login'
 import CreateListing from './pages/CreateListing'
 import MyListings from './pages/MyListings'
 import EditListing from './pages/EditListing'
+import ListingDetail from './pages/ListingDetail'
+import Profile from './pages/Profile'
 
 export default function App() {
   return (
@@ -21,6 +23,10 @@ export default function App() {
           <Route path="/create-listing" element={<CreateListing />} />
           <Route path="/my-listings" element={<MyListings />} />
           <Route path="/edit-listing/:id" element={<EditListing />} />
+          {/* T10 新增路由 */}
+          <Route path="/listings/:id" element={<ListingDetail />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/:id" element={<Profile />} />
         </Routes>
       </div>
     </BrowserRouter>
