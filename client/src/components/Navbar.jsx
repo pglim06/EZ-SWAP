@@ -72,6 +72,17 @@ export default function Navbar() {
                     >
                         My Listings
                     </Link>
+
+                    {/* T12: Offers & Deals 入口 */}
+                    <Link
+                        to="/orders"
+                        className={`transition ${location.pathname === '/orders'
+                            ? 'font-semibold text-blue-600'
+                            : 'text-slate-600 hover:text-blue-600 font-medium'
+                            }`}
+                    >
+                        Offers
+                    </Link>
                 </nav>
 
                 {/* 右侧：登录/Profile 与发帖按钮 */}

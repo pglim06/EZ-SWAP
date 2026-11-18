@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import MakeOfferModal from '../components/MakeOfferModal';
 import {
     ArrowLeft,
     CheckCircle2,
@@ -25,6 +26,7 @@ export default function ListingDetail() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showAuthModal, setShowAuthModal] = useState(false);
+    const [showOfferModal, setShowOfferModal] = useState(false);
 
     // 获取当前登录用户
     const storedUser = localStorage.getItem('currentUser');
@@ -60,7 +62,7 @@ export default function ListingDetail() {
         }
 
         if (actionName === 'offer') {
-            alert('Offer negotiation feature will be connected in T12!');
+            setShowOfferModal(true);
         } else if (actionName === 'chat') {
             alert('In-app chat feature will be connected in T11!');
         }
@@ -335,6 +337,16 @@ export default function ListingDetail() {
                     </div>
                 </div>
             )}
+            {/* T12: Make Offer 模态框 */}
+            <MakeOfferModal
+                isOpen={showOfferModal}
+                onClose={() => setShowOfferModal(false)}
+                listing={listing}
+                currentUser={storedUser ? JSON.parse(storedUser) : null}
+                onOfferSuccess={(order) => {
+                    console.log('Offer submitted successfully:', order);
+                }}
+            />
         </div>
     );
 }

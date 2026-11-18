@@ -21,7 +21,7 @@ const uploadToCloudinary = (fileBuffer) => {
 // @route   GET /api/users/:id
 exports.getUserProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).select('-passwordHash');
+        const user = await User.findById(req.params.id).select('-passwordHash'); //.select('-passwordHash'):绝对不返回密码散列值
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });

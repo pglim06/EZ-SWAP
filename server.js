@@ -22,7 +22,7 @@ app.get('/api/health', (req, res) => {
 // Routes
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/listings', require('./routes/listingRoutes'));
-// app.use('/api/orders', require('./routes/orderRoutes'));
+app.use('/api/orders', require('./routes/orderRoutes'));
 // app.use('/api/transactions', require('./routes/transactionRoutes'));
 // app.use('/api/reviews', require('./routes/reviewRoutes'));
 

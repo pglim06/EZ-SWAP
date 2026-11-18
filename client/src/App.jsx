@@ -7,6 +7,7 @@ import MyListings from './pages/MyListings'
 import EditListing from './pages/EditListing'
 import ListingDetail from './pages/ListingDetail'
 import Profile from './pages/Profile'
+import MyOrders from './pages/MyOrders'
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/listings/:id" element={<ListingDetail />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/:id" element={<Profile />} />
+          <Route path="/orders" element={<MyOrders />} />
         </Routes>
       </div>
     </BrowserRouter>
