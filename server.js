@@ -10,7 +10,16 @@ const app = express();
 connectDB();
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
+      'http://localhost:3000',
+    ],
+    credentials: true, // Allow session cookies
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
@@ -19,8 +28,10 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Routes (to be added later)
-// app.use('/api/users', require('./routes/userRoutes'));
+// Authentication Routes (T07)
+app.use('/api/auth', require('./routes/authRoutes'));
+
+// Other routes will be mounted in future tasks
 // app.use('/api/listings', require('./routes/listingRoutes'));
 // app.use('/api/orders', require('./routes/orderRoutes'));
 // app.use('/api/transactions', require('./routes/transactionRoutes'));
@@ -28,5 +39,7 @@ app.get('/api/health', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`EZ Swap Server running on port ${PORT}`);
 });
+
+module.exports = app;
