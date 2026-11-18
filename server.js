@@ -10,7 +10,16 @@ const app = express();
 connectDB();
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
+      'http://localhost:3000',
+    ],
+    credentials: true, // Allow session cookies
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
@@ -28,5 +37,7 @@ app.use('/api/listings', require('./routes/listingRoutes'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`EZ Swap Server running on port ${PORT}`);
 });
+
+module.exports = app;

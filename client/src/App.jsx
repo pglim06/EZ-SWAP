@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import Browse from './pages/Browse'
 import Login from './pages/Login'
@@ -8,10 +9,11 @@ import EditListing from './pages/EditListing'
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-slate-50 text-slate-800">
-        {/* 全局常驻导航栏 */}
-        <Navbar />
+    <AuthProvider>
+      <BrowserRouter>
+        <div className="min-h-screen bg-slate-50 text-slate-800">
+          {/* Global Sticky Navbar with Auth State */}
+          <Navbar />
 
         {/* 动态路由：访问 "/" 或 "/browse" 都会直接进入商品大厅！ */}
         <Routes>
