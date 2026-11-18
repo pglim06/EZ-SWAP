@@ -18,31 +18,31 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Center Nav */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-          <Link
-            to="/browse"
-            className="hover:text-blue-600 transition flex items-center gap-1.5 font-semibold text-blue-600"
-          >
-            <ShoppingBag className="w-4 h-4" /> Marketplace Ads
-          </Link>
-        </nav>
+                {/* 中间链接 */}
+                <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
+                    <Link to="/" className="hover:text-blue-600 transition flex items-center gap-1.5 font-semibold text-blue-600">
+                        <ShoppingBag className="w-4 h-4" /> Marketplace Ads
+                    </Link>
+                    <Link to="/my-listings" className="hover:text-blue-600 transition">
+                        My Listings
+                    </Link>
+                </nav>
 
-        {/* Right Nav */}
-        <div className="flex items-center gap-3">
-          {user ? (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
-                <div className="w-7 h-7 bg-blue-600 text-white rounded-lg flex items-center justify-center text-xs font-bold">
-                  {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                </div>
-                <div className="text-left hidden sm:block">
-                  <div className="text-xs font-bold text-slate-800 leading-tight">
-                    {user.name}
-                  </div>
-                  <div className="text-[10px] text-emerald-600 font-medium flex items-center gap-0.5">
-                    <ShieldCheck className="w-3 h-3" /> Verified Student
-                  </div>
+                {/* 右侧：登录与发帖按钮 */}
+                <div className="flex items-center gap-3">
+                    <Link
+                        to="/login"
+                        className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-50 transition"
+                    >
+                        <User className="w-4 h-4" /> Sign In
+                    </Link>
+
+                    <Link
+                        to="/create-listing"
+                        className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm hover:shadow transition"
+                    >
+                        <PlusCircle className="w-4 h-4" /> Post Free Ad
+                    </Link>
                 </div>
               </div>
 

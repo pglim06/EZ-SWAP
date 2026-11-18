@@ -28,11 +28,9 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Authentication Routes (T07)
-app.use('/api/auth', require('./routes/authRoutes'));
-
-// Other routes will be mounted in future tasks
-// app.use('/api/listings', require('./routes/listingRoutes'));
+// Routes (to be added later)
+// app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/listings', require('./routes/listingRoutes'));
 // app.use('/api/orders', require('./routes/orderRoutes'));
 // app.use('/api/transactions', require('./routes/transactionRoutes'));
 // app.use('/api/reviews', require('./routes/reviewRoutes'));
