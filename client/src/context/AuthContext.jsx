@@ -7,7 +7,7 @@ const API_BASE = 'http://localhost:5000/api/auth'
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
-      const saved = localStorage.getItem('ezswap_user')
+      const saved = localStorage.getItem('ezswap_user') || localStorage.getItem('currentUser')
       return saved ? JSON.parse(saved) : null
     } catch {
       return null
@@ -23,9 +23,11 @@ export function AuthProvider({ children }) {
         if (data && data.success && data.user) {
           setUser(data.user)
           localStorage.setItem('ezswap_user', JSON.stringify(data.user))
+          localStorage.setItem('currentUser', JSON.stringify(data.user))
         } else {
           setUser(null)
           localStorage.removeItem('ezswap_user')
+          localStorage.removeItem('currentUser')
         }
       })
       .catch(() => {
@@ -47,6 +49,7 @@ export function AuthProvider({ children }) {
     }
     setUser(data.user)
     localStorage.setItem('ezswap_user', JSON.stringify(data.user))
+    localStorage.setItem('currentUser', JSON.stringify(data.user))
     return data
   }
 
@@ -63,6 +66,7 @@ export function AuthProvider({ children }) {
     }
     setUser(data.user)
     localStorage.setItem('ezswap_user', JSON.stringify(data.user))
+    localStorage.setItem('currentUser', JSON.stringify(data.user))
     return data
   }
 
@@ -77,6 +81,7 @@ export function AuthProvider({ children }) {
     } finally {
       setUser(null)
       localStorage.removeItem('ezswap_user')
+      localStorage.removeItem('currentUser')
     }
   }
 

@@ -26,17 +26,23 @@ export default function Navbar() {
           <Link to="/my-listings" className="hover:text-blue-600 transition">
             My Listings
           </Link>
+          <Link to="/orders" className="hover:text-blue-600 transition">
+            Offers
+          </Link>
         </nav>
 
         {/* Right side: Auth & Post Ad */}
         <div className="flex items-center gap-3">
           {user ? (
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700">
+              <Link
+                to={`/profile/${user._id}`}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 hover:text-blue-600 transition"
+              >
                 <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                 <span className="max-w-[120px] truncate">{user.name || user.email}</span>
                 <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-              </div>
+              </Link>
 
               <button
                 onClick={logout}

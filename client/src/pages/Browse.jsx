@@ -1,4 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import MakeOfferModal from '../components/MakeOfferModal'
 import {
   Search,
   MapPin,
@@ -99,6 +102,11 @@ const FALLBACK_ITEMS = [
 ]
 
 export default function Browse() {
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const [selectedOfferListing, setSelectedOfferListing] = useState(null)
+  const [showOfferModal, setShowOfferModal] = useState(false)
+
   const [search, setSearch] = useState('')
   const [selectedCat, setSelectedCat] = useState('All')
   const [selectedCondition, setSelectedCondition] = useState('All')
@@ -442,11 +450,13 @@ export default function Browse() {
                 >
                   <div>
                     <div className="h-48 bg-slate-100 overflow-hidden relative">
-                      <img
-                        src={image}
-                        alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                      />
+                      <Link to={`/listings/${item._id || item.id}`}>
+                        <img
+                          src={image}
+                          alt={item.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                        />
+                      </Link>
                       <button className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full text-slate-600 hover:text-red-500 transition cursor-pointer">
                         <Heart className="w-4 h-4" />
                       </button>
@@ -466,9 +476,11 @@ export default function Browse() {
                         </span>
                       </div>
 
-                      <h3 className="font-bold text-slate-900 text-base leading-snug line-clamp-2 mb-2 group-hover:text-blue-600 transition">
-                        {item.title}
-                      </h3>
+                      <Link to={`/listings/${item._id || item.id}`}>
+                        <h3 className="font-bold text-slate-900 text-base leading-snug line-clamp-2 mb-2 group-hover:text-blue-600 transition">
+                          {item.title}
+                        </h3>
+                      </Link>
 
                       <div className="flex items-center gap-1 text-xs text-slate-500 mb-1.5">
                         <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -486,7 +498,17 @@ export default function Browse() {
                       <span className="text-[11px] text-slate-400 block">Price</span>
                       <span className="text-lg font-black text-blue-600">RM {item.price}</span>
                     </div>
-                    <button className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-2 rounded-lg transition cursor-pointer">
+                    <button
+                      onClick={() => {
+                        if (!user) {
+                          navigate('/login')
+                          return
+                        }
+                        setSelectedOfferListing(item)
+                        setShowOfferModal(true)
+                      }}
+                      className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-2 rounded-lg transition cursor-pointer"
+                    >
                       Make Offer
                     </button>
                   </div>
@@ -511,6 +533,19 @@ export default function Browse() {
           </div>
         )}
       </section>
+      {/* T12: Make Offer Modal */}
+      <MakeOfferModal
+        isOpen={showOfferModal}
+        onClose={() => {
+          setShowOfferModal(false)
+          setSelectedOfferListing(null)
+        }}
+        listing={selectedOfferListing}
+        currentUser={user}
+        onOfferSuccess={(order) => {
+          console.log('Offer submitted from Browse:', order)
+        }}
+      />
     </div>
   )
 }
