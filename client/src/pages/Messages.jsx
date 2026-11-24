@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useSocket } from '../context/SocketContext'
 import MakeOfferModal from '../components/MakeOfferModal'
+import MeetupSchedulingModal from '../components/MeetupSchedulingModal'
 import {
   MessageCircle,
   Send,
@@ -19,6 +20,8 @@ import {
   Check,
   X,
   AlertCircle,
+  Calendar,
+  MapPin,
 } from 'lucide-react'
 
 export default function Messages() {
@@ -48,7 +51,9 @@ export default function Messages() {
 
   // Offer integration in chat
   const [activeOrder, setActiveOrder] = useState(null)
+  const [activeTransaction, setActiveTransaction] = useState(null)
   const [showOfferModal, setShowOfferModal] = useState(false)
+  const [showSchedulingModal, setShowSchedulingModal] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
   const [showCounterInput, setShowCounterInput] = useState(false)
   const [counterPrice, setCounterPrice] = useState('')
@@ -105,6 +110,7 @@ export default function Messages() {
   const fetchActiveOrder = useCallback(async (conv) => {
     if (!conv?.listingId?._id || !conv?.buyerId?._id) {
       setActiveOrder(null)
+      setActiveTransaction(null)
       return
     }
     try {
@@ -113,12 +119,30 @@ export default function Messages() {
       )
       const data = await res.json()
       if (Array.isArray(data) && data.length > 0) {
-        setActiveOrder(data[0]) // latest order
+        const ord = data[0]
+        setActiveOrder(ord)
+        if (ord.status === 'accepted') {
+          try {
+            const txRes = await fetch(`/api/transactions/order/${ord._id}`)
+            const txData = await txRes.json()
+            if (txData && !txData.message) {
+              setActiveTransaction(txData)
+            } else {
+              setActiveTransaction(null)
+            }
+          } catch {
+            setActiveTransaction(null)
+          }
+        } else {
+          setActiveTransaction(null)
+        }
       } else {
         setActiveOrder(null)
+        setActiveTransaction(null)
       }
     } catch {
       setActiveOrder(null)
+      setActiveTransaction(null)
     }
   }, [])
 
@@ -598,8 +622,29 @@ export default function Messages() {
                           </span>
                         </div>
                         <p className="text-[11px] opacity-80 mt-0.5">
-                          Method: {activeOrder.transactionMethod === 'meetup' ? 'Campus Meetup' : 'Delivery'}
-                          {activeOrder.notes && ` • "${activeOrder.notes}"`}
+                          {activeTransaction?.transactionCode && (
+                            <span className="font-semibold text-emerald-800 mr-2 bg-emerald-100/80 px-1.5 py-0.5 rounded">
+                              {activeTransaction.transactionCode}
+                            </span>
+                          )}
+                          {activeTransaction?.meetupLocation ? (
+                            <span>
+                              📍 {activeTransaction.meetupLocation}
+                              {activeTransaction.meetupTime
+                                ? ` (${new Date(activeTransaction.meetupTime).toLocaleString([], {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })})`
+                                : ''}
+                            </span>
+                          ) : (
+                            <span>
+                              Method: {activeOrder.transactionMethod === 'meetup' ? 'Campus Meetup' : 'Delivery'}
+                              {activeOrder.notes && ` • "${activeOrder.notes}"`}
+                            </span>
+                          )}
                         </p>
                       </div>
                     </div>
@@ -664,11 +709,17 @@ export default function Messages() {
                         </button>
                       )}
 
-                      {/* Accepted status info */}
+                      {/* Accepted status info with Schedule Meetup button */}
                       {activeOrder.status === 'accepted' && (
-                        <span className="text-[11px] font-medium text-emerald-700 bg-emerald-100/60 px-2.5 py-1 rounded-md">
-                          Deal Confirmed! Arrange meetup in chat below.
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setShowSchedulingModal(true)}
+                            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1.5 rounded-lg transition shadow-xs cursor-pointer text-xs"
+                          >
+                            <Calendar className="w-3.5 h-3.5" />
+                            {activeTransaction?.meetupTime ? 'Update Meetup' : 'Schedule Meetup'}
+                          </button>
+                        </div>
                       )}
                     </div>
 
@@ -896,6 +947,21 @@ export default function Messages() {
           currentUser={user}
           onOfferSuccess={async () => {
             setShowOfferModal(false)
+            await reloadMessagesAndOrder()
+          }}
+        />
+      )}
+
+      {/* T13: Meetup / Handover Scheduling Modal right inside Chat */}
+      {showSchedulingModal && activeOrder && (
+        <MeetupSchedulingModal
+          transaction={activeTransaction}
+          order={activeOrder}
+          currentUser={user}
+          onClose={() => setShowSchedulingModal(false)}
+          onUpdated={async (updatedTx) => {
+            setActiveTransaction(updatedTx)
+            setShowSchedulingModal(false)
             await reloadMessagesAndOrder()
           }}
         />
