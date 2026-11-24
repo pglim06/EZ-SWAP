@@ -143,7 +143,7 @@ async function runRecommendationTests() {
     description: 'Multi-device Bluetooth keyboard in great condition',
     price: 85,
     category: 'Electronics',
-    condition: 'Like New',
+    condition: 'Used',
     tags: ['logitech', 'keyboard', 'bluetooth', 'electronics'],
     viewsCount: 15,
   });

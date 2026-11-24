@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import MeetupSchedulingModal from '../components/MeetupSchedulingModal';
+import DisputeModal from '../components/DisputeModal';
 import {
     Tag,
     Handshake,
@@ -11,6 +12,7 @@ import {
     XCircle,
     RotateCcw,
     AlertCircle,
+    AlertTriangle,
     Loader2,
     MessageSquare,
     DollarSign,
@@ -45,6 +47,10 @@ export default function MyOrders() {
     const [selectedOrderForModal, setSelectedOrderForModal] = useState(null);
     const [selectedTxForModal, setSelectedTxForModal] = useState(null);
     const [copiedTxId, setCopiedTxId] = useState(null);
+
+    // T14: Dual Handover Confirmation & Dispute Modal 状态
+    const [disputeModalOpen, setDisputeModalOpen] = useState(false);
+    const [selectedTxForDispute, setSelectedTxForDispute] = useState(null);
 
     // 获取订单列表与交易详情
     const fetchOrders = async () => {
@@ -191,6 +197,31 @@ export default function MyOrders() {
         setSelectedOrderForModal(order);
         setSelectedTxForModal(tx);
         setSchedulingModalOpen(true);
+    };
+
+    // 6. T14: 买卖双方交接确认 (Dual Handover Confirmation)
+    const handleConfirmHandover = async (transactionId, role) => {
+        const actionLabel = role === 'seller' ? 'confirm item handover' : 'confirm item receipt';
+        if (!window.confirm(`Are you sure you want to ${actionLabel}? This action confirms that the physical exchange has taken place.`)) {
+            return;
+        }
+
+        try {
+            setActionLoading(true);
+            const res = await fetch(`/api/transactions/${transactionId}/confirm-handover`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: currentUser._id, role }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Failed to confirm handover');
+
+            fetchOrders();
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            setActionLoading(false);
+        }
     };
 
     const handleCopyTxCode = (txCode) => {
@@ -524,6 +555,165 @@ export default function MyOrders() {
                                                     Chat with {activeTab === 'received' ? 'Buyer' : 'Seller'}
                                                 </Link>
                                             </div>
+
+                                            {/* T14: Dual Handover Confirmation & Dispute Tracker */}
+                                            {tx && (
+                                                <div className="mt-4 pt-4 border-t border-emerald-200/80">
+                                                    <div className="flex items-center justify-between mb-2.5">
+                                                        <h5 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                                                            Dual Handover Confirmation (T14)
+                                                        </h5>
+                                                        <div>
+                                                            {tx.status === 'completed' ? (
+                                                                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                                                                    Deal Completed
+                                                                </span>
+                                                            ) : tx.status === 'disputed' ? (
+                                                                <span className="text-[11px] font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-full border border-red-300 flex items-center gap-1">
+                                                                    <AlertTriangle className="w-3 h-3" /> Under Dispute
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-[11px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full border border-blue-200">
+                                                                    Exchange In Progress
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* 2-Step Status Grid */}
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
+                                                        {/* Step 1: Seller Handed Over */}
+                                                        <div className={`p-3 rounded-xl border text-xs flex items-center justify-between ${
+                                                            tx.sellerConfirmation === 'handed_over'
+                                                                ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                                                                : 'bg-white border-slate-200 text-slate-600'
+                                                        }`}>
+                                                            <div className="flex items-center gap-2">
+                                                                {tx.sellerConfirmation === 'handed_over' ? (
+                                                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                                                                ) : (
+                                                                    <Clock className="w-4 h-4 text-slate-400 shrink-0" />
+                                                                )}
+                                                                <div>
+                                                                    <span className="font-bold block text-[11px]">1. Seller Handover</span>
+                                                                    <span className="text-[10px] opacity-80">
+                                                                        {tx.sellerConfirmation === 'handed_over' ? 'Handed Over to Buyer' : 'Pending Seller Confirmation'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            {tx.sellerConfirmation === 'handed_over' && (
+                                                                <span className="text-[10px] font-bold bg-white text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-200 shadow-2xs">
+                                                                    Done
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Step 2: Buyer Received */}
+                                                        <div className={`p-3 rounded-xl border text-xs flex items-center justify-between ${
+                                                            tx.buyerConfirmation === 'received'
+                                                                ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                                                                : 'bg-white border-slate-200 text-slate-600'
+                                                        }`}>
+                                                            <div className="flex items-center gap-2">
+                                                                {tx.buyerConfirmation === 'received' ? (
+                                                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                                                                ) : (
+                                                                    <Clock className="w-4 h-4 text-slate-400 shrink-0" />
+                                                                )}
+                                                                <div>
+                                                                    <span className="font-bold block text-[11px]">2. Buyer Receipt</span>
+                                                                    <span className="text-[10px] opacity-80">
+                                                                        {tx.buyerConfirmation === 'received' ? 'Item Received & Inspected' : 'Pending Buyer Receipt'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            {tx.buyerConfirmation === 'received' && (
+                                                                <span className="text-[10px] font-bold bg-white text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-200 shadow-2xs">
+                                                                    Done
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Handover Action Buttons & Dispute Flag */}
+                                                    {tx.status === 'in_progress' && (
+                                                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                                                            <div className="flex items-center gap-2">
+                                                                {/* Seller Action Button */}
+                                                                {activeTab === 'received' && tx.sellerConfirmation === 'pending' && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleConfirmHandover(tx._id, 'seller')}
+                                                                        disabled={actionLoading}
+                                                                        className="px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                                                                    >
+                                                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                                                        Confirm Handed Over
+                                                                    </button>
+                                                                )}
+
+                                                                {/* Buyer Action Button */}
+                                                                {activeTab === 'sent' && tx.buyerConfirmation === 'pending' && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleConfirmHandover(tx._id, 'buyer')}
+                                                                        disabled={actionLoading}
+                                                                        className="px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                                                                    >
+                                                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                                                        Confirm Item Received
+                                                                    </button>
+                                                                )}
+
+                                                                {/* Awaiting counterpart status text if already confirmed */}
+                                                                {((activeTab === 'received' && tx.sellerConfirmation === 'handed_over') ||
+                                                                  (activeTab === 'sent' && tx.buyerConfirmation === 'received')) && (
+                                                                    <span className="text-xs text-emerald-800 font-semibold flex items-center gap-1 bg-white/80 px-2.5 py-1 rounded-lg border border-emerald-200">
+                                                                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                                                        You confirmed your side. Waiting for {activeTab === 'received' ? 'buyer' : 'seller'}.
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Dispute Trigger Button */}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setSelectedTxForDispute(tx);
+                                                                    setDisputeModalOpen(true);
+                                                                }}
+                                                                className="text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-2.5 py-1.5 rounded-lg border border-red-200 transition flex items-center gap-1 cursor-pointer"
+                                                            >
+                                                                <AlertTriangle className="w-3.5 h-3.5" />
+                                                                Report Issue / Dispute (T14)
+                                                            </button>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Completed Banner */}
+                                                    {tx.status === 'completed' && (
+                                                        <div className="bg-emerald-100/70 border border-emerald-300 rounded-xl p-3 text-xs text-emerald-900 flex items-center justify-between gap-2 mt-2">
+                                                            <span className="font-semibold flex items-center gap-1.5">
+                                                                🎉 Both parties confirmed exchange! Transaction is officially complete.
+                                                            </span>
+                                                            <span className="text-[11px] text-emerald-700 font-medium">
+                                                                {tx.completedAt ? new Date(tx.completedAt).toLocaleDateString() : 'Completed'}
+                                                            </span>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Disputed Banner */}
+                                                    {tx.status === 'disputed' && (
+                                                        <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-800 flex items-center gap-2 mt-2">
+                                                            <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+                                                            <span>
+                                                                This transaction has been flagged for dispute. Handover is frozen while campus administrators mediate the issue.
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -679,6 +869,28 @@ export default function MyOrders() {
                             ...prev,
                             [selectedOrderForModal._id]: updatedTx,
                         }));
+                        fetchOrders();
+                    }}
+                />
+            )}
+
+            {/* T14: Dispute Flag Modal 弹窗 */}
+            {disputeModalOpen && selectedTxForDispute && (
+                <DisputeModal
+                    transaction={selectedTxForDispute}
+                    currentUser={currentUser}
+                    onClose={() => {
+                        setDisputeModalOpen(false);
+                        setSelectedTxForDispute(null);
+                    }}
+                    onSuccess={(updatedTx) => {
+                        setTransactionsMap((prev) => {
+                            const orderId = typeof updatedTx.orderId === 'object' ? updatedTx.orderId?._id : updatedTx.orderId;
+                            return {
+                                ...prev,
+                                [orderId]: updatedTx,
+                            };
+                        });
                         fetchOrders();
                     }}
                 />

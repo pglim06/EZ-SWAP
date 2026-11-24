@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useSocket } from '../context/SocketContext'
 import MakeOfferModal from '../components/MakeOfferModal'
 import MeetupSchedulingModal from '../components/MeetupSchedulingModal'
+import DisputeModal from '../components/DisputeModal'
 import {
   MessageCircle,
   Send,
@@ -20,6 +21,7 @@ import {
   Check,
   X,
   AlertCircle,
+  AlertTriangle,
   Calendar,
   MapPin,
 } from 'lucide-react'
@@ -54,6 +56,7 @@ export default function Messages() {
   const [activeTransaction, setActiveTransaction] = useState(null)
   const [showOfferModal, setShowOfferModal] = useState(false)
   const [showSchedulingModal, setShowSchedulingModal] = useState(false)
+  const [showDisputeModal, setShowDisputeModal] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
   const [showCounterInput, setShowCounterInput] = useState(false)
   const [counterPrice, setCounterPrice] = useState('')
@@ -363,6 +366,31 @@ export default function Messages() {
       if (!res.ok) {
         const err = await res.json()
         throw new Error(err.message || 'Failed to cancel offer')
+      }
+      await reloadMessagesAndOrder()
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  // ─── T14: Dual Handover Confirmation ─────────────────────────────
+  const handleConfirmHandover = async (transactionId, role) => {
+    const actionLabel = role === 'seller' ? 'confirm item handover' : 'confirm item receipt'
+    if (!window.confirm(`Are you sure you want to ${actionLabel}? This action confirms that the physical exchange has taken place.`)) {
+      return
+    }
+    try {
+      setActionLoading(true)
+      const res = await fetch(`/api/transactions/${transactionId}/confirm-handover`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: currentUserId, role }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.message || 'Failed to confirm handover')
       }
       await reloadMessagesAndOrder()
     } catch (err) {
@@ -709,16 +737,62 @@ export default function Messages() {
                         </button>
                       )}
 
-                      {/* Accepted status info with Schedule Meetup button */}
+                      {/* Accepted status info with Schedule Meetup, Handover Confirmation & Dispute */}
                       {activeOrder.status === 'accepted' && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           <button
                             onClick={() => setShowSchedulingModal(true)}
-                            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1.5 rounded-lg transition shadow-xs cursor-pointer text-xs"
+                            className="flex items-center gap-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold px-2.5 py-1.5 rounded-lg transition shadow-2xs cursor-pointer text-xs"
                           >
-                            <Calendar className="w-3.5 h-3.5" />
-                            {activeTransaction?.meetupTime ? 'Update Meetup' : 'Schedule Meetup'}
+                            <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                            {activeTransaction?.meetupTime ? 'Meetup Set' : 'Schedule'}
                           </button>
+
+                          {/* T14: Seller Handover Button */}
+                          {isSeller && activeTransaction?.status === 'in_progress' && activeTransaction?.sellerConfirmation === 'pending' && (
+                            <button
+                              onClick={() => handleConfirmHandover(activeTransaction._id, 'seller')}
+                              disabled={actionLoading}
+                              className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-2.5 py-1.5 rounded-lg transition shadow-xs cursor-pointer text-xs"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Confirm Handover
+                            </button>
+                          )}
+
+                          {/* T14: Buyer Receipt Button */}
+                          {isBuyer && activeTransaction?.status === 'in_progress' && activeTransaction?.buyerConfirmation === 'pending' && (
+                            <button
+                              onClick={() => handleConfirmHandover(activeTransaction._id, 'buyer')}
+                              disabled={actionLoading}
+                              className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-2.5 py-1.5 rounded-lg transition shadow-xs cursor-pointer text-xs"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Confirm Received
+                            </button>
+                          )}
+
+                          {/* Completed or Disputed Badges */}
+                          {activeTransaction?.status === 'completed' && (
+                            <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-300">
+                              Completed ✓
+                            </span>
+                          )}
+
+                          {activeTransaction?.status === 'disputed' && (
+                            <span className="text-[11px] font-bold text-red-700 bg-red-100 px-2 py-1 rounded-md border border-red-300 flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3" /> Disputed
+                            </span>
+                          )}
+
+                          {/* Dispute Button */}
+                          {activeTransaction?.status === 'in_progress' && (
+                            <button
+                              onClick={() => setShowDisputeModal(true)}
+                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer"
+                              title="Flag Dispute (T14)"
+                            >
+                              <AlertTriangle className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
@@ -962,6 +1036,20 @@ export default function Messages() {
           onUpdated={async (updatedTx) => {
             setActiveTransaction(updatedTx)
             setShowSchedulingModal(false)
+            await reloadMessagesAndOrder()
+          }}
+        />
+      )}
+
+      {/* T14: Dispute Flag Modal right inside Chat */}
+      {showDisputeModal && activeTransaction && (
+        <DisputeModal
+          transaction={activeTransaction}
+          currentUser={user}
+          onClose={() => setShowDisputeModal(false)}
+          onSuccess={async (updatedTx) => {
+            setActiveTransaction(updatedTx)
+            setShowDisputeModal(false)
             await reloadMessagesAndOrder()
           }}
         />

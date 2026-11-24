@@ -81,7 +81,7 @@ async function runTests() {
     description: 'Test listing for smoke test',
     price: 25.00,
     category: 'Textbooks',
-    condition: 'Good',
+    condition: 'Used',
     images: [
       { imageUrl: 'https://example.com/test-img.jpg', displayOrder: 0 },
     ],

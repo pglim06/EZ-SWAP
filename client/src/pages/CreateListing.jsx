@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Upload, X, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
 const CATEGORIES = ['Textbooks', 'Electronics', 'Dorm', 'Services', 'Clothing', 'Other'];
-const CONDITIONS = ['New', 'Like New', 'Good', 'Fair', 'Poor'];
+const CONDITIONS = ['New', 'Used'];
 
 export default function CreateListing() {
     const navigate = useNavigate();
@@ -16,7 +16,7 @@ export default function CreateListing() {
         title: '',
         price: '',
         category: 'Textbooks',
-        condition: 'Good',
+        condition: 'Used',
         description: '',
     });
     const [files, setFiles] = useState([]);

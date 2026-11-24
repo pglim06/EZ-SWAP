@@ -245,7 +245,11 @@ exports.getListings = async (req, res) => {
 
     // 3. Condition filter
     if (condition && condition !== 'All') {
-      query.condition = condition;
+      if (condition === 'Used') {
+        query.condition = { $in: ['Used', 'Like New', 'Good', 'Fair', 'Poor'] };
+      } else {
+        query.condition = condition;
+      }
     }
 
     // 4. Price range filter
@@ -345,7 +349,7 @@ exports.seedSampleListings = async (req, res) => {
         description: 'Original textbook for first-year engineering students. No highlighted pages, like new.',
         price: 35,
         category: 'Textbooks',
-        condition: 'Like New',
+        condition: 'Used',
         tags: ['mathematics', 'calculus', 'algebra', 'engineering', 'textbook'],
         viewsCount: 28,
         images: [{ imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80', displayOrder: 0 }],
@@ -357,7 +361,7 @@ exports.seedSampleListings = async (req, res) => {
         description: 'Used for only 1 semester in UTM KRP dorm. Perfect working condition, includes AA battery.',
         price: 45,
         category: 'Electronics',
-        condition: 'Good',
+        condition: 'Used',
         tags: ['logitech', 'mouse', 'wireless', 'bluetooth', 'accessories'],
         viewsCount: 42,
         images: [{ imageUrl: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&auto=format&fit=crop&q=80', displayOrder: 0 }],
@@ -381,7 +385,7 @@ exports.seedSampleListings = async (req, res) => {
         description: 'Worn only once during orientation week. Clean, washed, no stains.',
         price: 18,
         category: 'Clothing',
-        condition: 'Like New',
+        condition: 'Used',
         tags: ['utm', 'polo', 'shirt', 'clothing', 'apparel'],
         viewsCount: 15,
         images: [{ imageUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80', displayOrder: 0 }],
@@ -393,7 +397,7 @@ exports.seedSampleListings = async (req, res) => {
         description: 'Great fixie bike for traveling between Kolej Perdana and faculty buildings. New brake pads.',
         price: 120,
         category: 'Other',
-        condition: 'Good',
+        condition: 'Used',
         tags: ['bicycle', 'commute', 'transport', 'sports', 'bike'],
         viewsCount: 35,
         images: [{ imageUrl: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=600&auto=format&fit=crop&q=80', displayOrder: 0 }],

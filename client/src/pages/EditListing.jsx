@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Upload, X, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 const CATEGORIES = ['Textbooks', 'Electronics', 'Dorm', 'Services', 'Clothing', 'Other'];
-const CONDITIONS = ['New', 'Like New', 'Good', 'Fair', 'Poor'];
+const CONDITIONS = ['New', 'Used'];
 const STATUSES = ['active', 'reserved', 'sold'];
 
 export default function EditListing() {
@@ -14,7 +14,7 @@ export default function EditListing() {
         title: '',
         price: '',
         category: 'Textbooks',
-        condition: 'Good',
+        condition: 'Used',
         status: 'active',
         description: '',
     });
@@ -39,7 +39,7 @@ export default function EditListing() {
                     title: item.title || '',
                     price: item.price || '',
                     category: item.category || 'Textbooks',
-                    condition: item.condition || 'Good',
+                    condition: item.condition === 'New' ? 'New' : 'Used',
                     status: item.status || 'active',
                     description: item.description || '',
                 });

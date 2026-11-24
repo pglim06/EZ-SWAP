@@ -74,7 +74,7 @@ async function runOrderWorkflowTest() {
                 description: 'Used Calculus book for test purposes',
                 price: 80,
                 category: 'Textbooks',
-                condition: 'Good',
+                condition: 'Used',
                 images: [{ imageUrl: 'https://via.placeholder.com/150', displayOrder: 0 }],
                 status: 'active',
             });

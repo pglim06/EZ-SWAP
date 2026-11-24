@@ -37,7 +37,7 @@ const CATEGORIES = [
   { id: 'Sports', name: 'Bikes & Sports', icon: Bike, color: 'text-teal-600', bg: 'bg-teal-50' },
 ]
 
-const CONDITIONS = ['All', 'New', 'Like New', 'Good', 'Fair', 'Poor']
+const CONDITIONS = ['All', 'New', 'Used']
 
 // Fallback demo items if backend database is offline or empty
 export const FALLBACK_ITEMS = [
@@ -46,7 +46,7 @@ export const FALLBACK_ITEMS = [
     title: 'Engineering Mathematics 1 (Calculus & Algebra)',
     category: 'Textbooks',
     price: 35,
-    condition: 'Like New',
+    condition: 'Used',
     location: 'UTM Arked Meranti',
     sellerId: { name: 'Ahmad Faris', averageRating: 4.9, verificationStatus: 'verified' },
     images: [{ imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=60' }],
@@ -56,7 +56,7 @@ export const FALLBACK_ITEMS = [
     title: 'Logitech Wireless Silent Mouse M331',
     category: 'Electronics',
     price: 45,
-    condition: 'Good',
+    condition: 'Used',
     location: 'Kolej Rahman Putra (KRP)',
     sellerId: { name: 'Sarah Tan', averageRating: 5.0, verificationStatus: 'verified' },
     images: [{ imageUrl: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=500&auto=format&fit=crop&q=60' }],
@@ -76,7 +76,7 @@ export const FALLBACK_ITEMS = [
     title: 'Official UTM Corporate Polo Shirt (Size L)',
     category: 'Clothing',
     price: 18,
-    condition: 'Like New',
+    condition: 'Used',
     location: 'UTM FABU Building',
     sellerId: { name: 'Nurul Huda', averageRating: 4.7, verificationStatus: 'verified' },
     images: [{ imageUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&auto=format&fit=crop&q=60' }],
@@ -86,7 +86,7 @@ export const FALLBACK_ITEMS = [
     title: 'Campus Commute Fixed Gear Bicycle',
     category: 'Other',
     price: 120,
-    condition: 'Good',
+    condition: 'Used',
     location: 'Kolej Perdana (KP)',
     sellerId: { name: 'Hafiz Azman', averageRating: 4.9, verificationStatus: 'verified' },
     images: [{ imageUrl: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=500&auto=format&fit=crop&q=60' }],
@@ -165,7 +165,10 @@ export default function Browse() {
           (selectedCat === 'Dorm Essentials' && item.category === 'Dorm') ||
           (selectedCat === 'Fashion' && item.category === 'Clothing') ||
           (selectedCat === 'Sports' && item.category === 'Other')
-        const matchesCond = selectedCondition === 'All' || item.condition === selectedCondition
+        const matchesCond =
+          selectedCondition === 'All' ||
+          item.condition === selectedCondition ||
+          (selectedCondition === 'Used' && ['Like New', 'Good', 'Fair', 'Poor'].includes(item.condition))
         const matchesMin = minPrice === '' || item.price >= Number(minPrice)
         const matchesMax = maxPrice === '' || item.price <= Number(maxPrice)
         return matchesSearch && matchesCat && matchesCond && matchesMin && matchesMax
@@ -409,8 +412,8 @@ export default function Browse() {
 
       {/* Ads Listing Grid */}
       <section className="max-w-7xl mx-auto px-6">
-        {/* T17: AI Recommendation Shelf (shown when exploring all ads or fresh search) */}
-        {selectedCat === 'All' && !search && (
+        {/* AI Recommendation Shelf hidden to prevent obstructing filter controls and instant results */}
+        {/* {selectedCat === 'All' && !search && (
           <RecommendationShelf
             onMakeOffer={(item) => {
               if (!user) {
@@ -421,7 +424,7 @@ export default function Browse() {
               setShowOfferModal(true)
             }}
           />
-        )}
+        )} */}
 
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">

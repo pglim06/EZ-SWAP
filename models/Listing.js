@@ -52,7 +52,7 @@ const listingSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Condition is required'],
       enum: {
-        values: ['New', 'Like New', 'Good', 'Fair', 'Poor'],
+        values: ['New', 'Used'],
         message: '{VALUE} is not a valid condition',
       },
     },

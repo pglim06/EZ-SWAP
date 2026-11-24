@@ -73,7 +73,7 @@ async function runTransactionTest() {
                 description: 'Casio calculator used for 1 semester, excellent condition',
                 price: 60,
                 category: 'Electronics',
-                condition: 'Like New',
+                condition: 'Used',
                 images: [{ imageUrl: 'https://via.placeholder.com/150', displayOrder: 0 }],
                 status: 'active',
             });

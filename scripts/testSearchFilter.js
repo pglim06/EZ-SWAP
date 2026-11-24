@@ -45,7 +45,7 @@ async function testSearchFilter() {
       description: 'First year engineering calculus textbook with notes',
       price: 30,
       category: 'Textbooks',
-      condition: 'Like New',
+      condition: 'Used',
       status: 'active',
     },
     {
@@ -54,7 +54,7 @@ async function testSearchFilter() {
       description: 'Mechanics and thermal physics reference book',
       price: 60,
       category: 'Textbooks',
-      condition: 'Good',
+      condition: 'Used',
       status: 'active',
     },
     {
@@ -72,7 +72,7 @@ async function testSearchFilter() {
       description: 'LED warm desk light with flexible stand',
       price: 15,
       category: 'Dorm',
-      condition: 'Fair',
+      condition: 'Used',
       status: 'active',
     },
   ]);
