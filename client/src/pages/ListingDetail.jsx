@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import MakeOfferModal from '../components/MakeOfferModal';
 import { FALLBACK_ITEMS } from './Browse';
+import { recordView, fetchSimilarListings } from '../utils/viewHistory';
 import {
     ArrowLeft,
     CheckCircle2,
@@ -16,7 +17,9 @@ import {
     Trash2,
     Loader2,
     X,
-    Lock
+    Lock,
+    Sparkles,
+    Eye,
 } from 'lucide-react';
 
 export default function ListingDetail() {
@@ -29,6 +32,7 @@ export default function ListingDetail() {
     const [error, setError] = useState('');
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showOfferModal, setShowOfferModal] = useState(false);
+    const [similarListings, setSimilarListings] = useState([]);
 
     const { user } = useAuth();
     const storedUser = localStorage.getItem('currentUser');
@@ -53,6 +57,9 @@ export default function ListingDetail() {
                 }
                 const item = data.listing || data;
                 setListing(item);
+
+                // T17: Record student view event in background
+                recordView(id, currentUserId);
             } catch (err) {
                 // If network/database error, check demo items as fallback
                 const fallback = FALLBACK_ITEMS.find((it) => it._id === id || it.id === id);
@@ -66,10 +73,16 @@ export default function ListingDetail() {
             }
         };
 
+        const loadSimilar = async () => {
+            const items = await fetchSimilarListings(id, 4);
+            setSimilarListings(items);
+        };
+
         if (id) {
             fetchListing();
+            loadSimilar();
         }
-    }, [id]);
+    }, [id, currentUserId]);
 
     // 拦截 Guest 操作
     const handleActionClick = (actionName) => {
@@ -216,10 +229,31 @@ export default function ListingDetail() {
                             <span className="text-3xl font-black text-blue-600">RM {listing.price}</span>
                         </div>
 
-                        <div className="flex items-center gap-1.5 text-xs text-slate-400 pb-6 border-b border-slate-100">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>Posted on {new Date(listing.createdAt).toLocaleDateString()}</span>
+                        <div className="flex items-center justify-between text-xs text-slate-400 pb-6 border-b border-slate-100">
+                            <div className="flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5" />
+                                <span>Posted on {new Date(listing.createdAt || Date.now()).toLocaleDateString()}</span>
+                            </div>
+                            {typeof listing.viewsCount === 'number' && (
+                                <div className="flex items-center gap-1 text-slate-500 font-medium">
+                                    <Eye className="w-3.5 h-3.5 text-slate-400" />
+                                    <span>{listing.viewsCount} views</span>
+                                </div>
+                            )}
                         </div>
+
+                        {listing.tags && listing.tags.length > 0 && (
+                            <div className="pt-3 pb-2 flex flex-wrap gap-1.5">
+                                {listing.tags.map((tag, idx) => (
+                                    <span
+                                        key={idx}
+                                        className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium"
+                                    >
+                                        #{tag}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
 
                         <div className="pt-6 space-y-3">
                             {isOwner ? (
@@ -325,6 +359,61 @@ export default function ListingDetail() {
                     </div>
                 </div>
             </div>
+
+            {/* T17: Similar Items / AI Recommendations */}
+            {similarListings && similarListings.length > 0 && (
+                <div className="mt-12 bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                            <span className="p-1.5 bg-blue-100 text-blue-700 rounded-lg">
+                                <Sparkles className="w-4 h-4" />
+                            </span>
+                            <h2 className="text-base font-bold text-slate-900">Similar Items You Might Like</h2>
+                            <span className="text-[10px] font-semibold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100">
+                                AI Content Match
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        {similarListings.map((item) => (
+                            <Link
+                                key={item._id || item.id}
+                                to={`/listings/${item._id || item.id}`}
+                                className="group border border-slate-200 hover:border-blue-400 rounded-xl overflow-hidden p-3 hover:shadow-md transition flex flex-col justify-between"
+                            >
+                                <div>
+                                    <div className="aspect-4/3 bg-slate-100 rounded-lg overflow-hidden mb-2 relative">
+                                        <img
+                                            src={item.images?.[0]?.imageUrl || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=60'}
+                                            alt={item.title}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                        />
+                                        {item.similarityScore && (
+                                            <span className="absolute top-1.5 left-1.5 bg-slate-900/80 text-amber-300 text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                                <Sparkles className="w-2.5 h-2.5" /> {item.similarityScore}% Match
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="text-[10px] text-blue-600 font-semibold mb-0.5">{item.category}</div>
+                                    <h3 className="text-xs font-bold text-slate-800 line-clamp-2 group-hover:text-blue-600 transition">
+                                        {item.title}
+                                    </h3>
+                                    {item.matchReason && (
+                                        <p className="text-[10px] text-slate-400 mt-1 line-clamp-1 italic">
+                                            {item.matchReason}
+                                        </p>
+                                    )}
+                                </div>
+                                <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                                    <span className="text-xs font-black text-blue-600">RM {item.price}</span>
+                                    <span className="text-[10px] text-slate-400">{item.condition}</span>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Guest 弹窗 */}
             {showAuthModal && (

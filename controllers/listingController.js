@@ -66,6 +66,15 @@ exports.createListing = async (req, res) => {
             images = [{ imageUrl: req.body.imageUrl, displayOrder: 0 }];
         }
 
+        let parsedTags = [];
+        if (req.body.tags) {
+            parsedTags = Array.isArray(req.body.tags)
+                ? req.body.tags
+                : typeof req.body.tags === 'string'
+                ? req.body.tags.split(',').map((t) => t.trim()).filter(Boolean)
+                : [];
+        }
+
         const listing = await Listing.create({
             sellerId,
             title: title ? title.trim() : '',
@@ -74,6 +83,7 @@ exports.createListing = async (req, res) => {
             category: normalizeCategory(category) || category,
             condition,
             images,
+            tags: parsedTags,
             status: 'active',
         });
 
@@ -336,6 +346,8 @@ exports.seedSampleListings = async (req, res) => {
         price: 35,
         category: 'Textbooks',
         condition: 'Like New',
+        tags: ['mathematics', 'calculus', 'algebra', 'engineering', 'textbook'],
+        viewsCount: 28,
         images: [{ imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80', displayOrder: 0 }],
         status: 'active',
       },
@@ -346,6 +358,8 @@ exports.seedSampleListings = async (req, res) => {
         price: 45,
         category: 'Electronics',
         condition: 'Good',
+        tags: ['logitech', 'mouse', 'wireless', 'bluetooth', 'accessories'],
+        viewsCount: 42,
         images: [{ imageUrl: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&auto=format&fit=crop&q=80', displayOrder: 0 }],
         status: 'active',
       },
@@ -356,6 +370,8 @@ exports.seedSampleListings = async (req, res) => {
         price: 20,
         category: 'Dorm',
         condition: 'New',
+        tags: ['lamp', 'desk', 'dorm', 'led', 'study'],
+        viewsCount: 19,
         images: [{ imageUrl: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600&auto=format&fit=crop&q=80', displayOrder: 0 }],
         status: 'active',
       },
@@ -366,6 +382,8 @@ exports.seedSampleListings = async (req, res) => {
         price: 18,
         category: 'Clothing',
         condition: 'Like New',
+        tags: ['utm', 'polo', 'shirt', 'clothing', 'apparel'],
+        viewsCount: 15,
         images: [{ imageUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80', displayOrder: 0 }],
         status: 'active',
       },
@@ -376,6 +394,8 @@ exports.seedSampleListings = async (req, res) => {
         price: 120,
         category: 'Other',
         condition: 'Good',
+        tags: ['bicycle', 'commute', 'transport', 'sports', 'bike'],
+        viewsCount: 35,
         images: [{ imageUrl: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=600&auto=format&fit=crop&q=80', displayOrder: 0 }],
         status: 'active',
       },
@@ -386,6 +406,8 @@ exports.seedSampleListings = async (req, res) => {
         price: 25,
         category: 'Services',
         condition: 'New',
+        tags: ['laptop', 'cleaning', 'service', 'repair', 'hardware'],
+        viewsCount: 31,
         images: [{ imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80', displayOrder: 0 }],
         status: 'active',
       },

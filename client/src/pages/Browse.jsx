@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import MakeOfferModal from '../components/MakeOfferModal'
+import RecommendationShelf from '../components/RecommendationShelf'
 import {
   Search,
   MapPin,
@@ -408,6 +409,20 @@ export default function Browse() {
 
       {/* Ads Listing Grid */}
       <section className="max-w-7xl mx-auto px-6">
+        {/* T17: AI Recommendation Shelf (shown when exploring all ads or fresh search) */}
+        {selectedCat === 'All' && !search && (
+          <RecommendationShelf
+            onMakeOffer={(item) => {
+              if (!user) {
+                navigate('/login')
+                return
+              }
+              setSelectedOfferListing(item)
+              setShowOfferModal(true)
+            }}
+          />
+        )}
+
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
             {selectedCat === 'All' ? 'All Recent Advertisements' : `${selectedCat} Listings`}

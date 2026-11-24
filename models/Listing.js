@@ -57,6 +57,17 @@ const listingSchema = new mongoose.Schema(
       },
     },
     images: [listingImageSchema],
+    tags: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    viewsCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     status: {
       type: String,
       enum: ['active', 'reserved', 'sold', 'removed'],

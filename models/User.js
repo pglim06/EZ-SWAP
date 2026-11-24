@@ -60,6 +60,18 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    viewHistory: [
+      {
+        listingId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Listing',
+        },
+        viewedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true, // createdAt + updatedAt

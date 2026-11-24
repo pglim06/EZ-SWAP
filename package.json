@@ -10,7 +10,8 @@
     "test:auth": "node scripts/testAuth.js",
     "test:search": "node scripts/testSearchFilter.js",
     "test:order": "node scripts/testOrder.js",
-    "test:transaction": "node scripts/testTransaction.js"
+    "test:transaction": "node scripts/testTransaction.js",
+    "test:recommendation": "node scripts/testRecommendation.js"
   },
   "repository": {
     "type": "git",
