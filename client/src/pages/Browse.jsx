@@ -22,6 +22,7 @@ import {
   Star,
   Database,
   Loader2,
+  MessageCircle,
 } from 'lucide-react'
 
 // 1. Mudah.my-style categories
@@ -498,19 +499,35 @@ export default function Browse() {
                       <span className="text-[11px] text-slate-400 block">Price</span>
                       <span className="text-lg font-black text-blue-600">RM {item.price}</span>
                     </div>
-                    <button
-                      onClick={() => {
-                        if (!user) {
-                          navigate('/login')
-                          return
-                        }
-                        setSelectedOfferListing(item)
-                        setShowOfferModal(true)
-                      }}
-                      className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-2 rounded-lg transition cursor-pointer"
-                    >
-                      Make Offer
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (!user) {
+                            navigate('/login')
+                            return
+                          }
+                          navigate(`/messages?listingId=${item._id || item.id}`)
+                        }}
+                        title="Chat with Seller"
+                        className="p-2 border border-slate-200 hover:border-blue-400 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition cursor-pointer flex items-center justify-center"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (!user) {
+                            navigate('/login')
+                            return
+                          }
+                          setSelectedOfferListing(item)
+                          setShowOfferModal(true)
+                        }}
+                        className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-2 rounded-lg transition cursor-pointer"
+                      >
+                        Make Offer
+                      </button>
+                    </div>
                   </div>
                 </div>
               )
@@ -543,7 +560,11 @@ export default function Browse() {
         listing={selectedOfferListing}
         currentUser={user}
         onOfferSuccess={(order) => {
-          console.log('Offer submitted from Browse:', order)
+          setShowOfferModal(false)
+          const targetListingId = selectedOfferListing?._id || selectedOfferListing?.id
+          if (targetListingId) {
+            navigate(`/messages?listingId=${targetListingId}`)
+          }
         }}
       />
     </div>

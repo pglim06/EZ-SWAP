@@ -28,9 +28,6 @@ export default function Navbar() {
           <Link to="/my-listings" className="hover:text-blue-600 transition">
             My Listings
           </Link>
-          <Link to="/orders" className="hover:text-blue-600 transition">
-            Offers
-          </Link>
           {user && (
             <Link to="/messages" className="hover:text-blue-600 transition relative flex items-center gap-1.5">
               <MessageCircle className="w-4 h-4" />

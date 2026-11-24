@@ -346,7 +346,8 @@ export default function ListingDetail() {
                 listing={listing}
                 currentUser={effectiveUser}
                 onOfferSuccess={(order) => {
-                    console.log('Offer submitted successfully:', order);
+                    setShowOfferModal(false);
+                    navigate(`/messages?listingId=${id}`);
                 }}
             />
         </div>

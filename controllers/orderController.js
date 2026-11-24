@@ -1,5 +1,7 @@
 const Order = require('../models/Order');
 const Listing = require('../models/Listing');
+const Conversation = require('../models/Conversation');
+const Message = require('../models/Message');
 require('../models/User'); // 确保 User 模型已被注册用于 populate
 
 // @desc    1. Buyer 创建/发送报价 (Make Offer)
@@ -63,6 +65,31 @@ exports.createOrder = async (req, res) => {
             status: 'pending',
         });
 
+        // 自动将报价同步发送至买卖双方的私信消息中 (In-App Messaging)
+        try {
+            let conv = await Conversation.findOne({ listingId, buyerId });
+            if (!conv) {
+                conv = await Conversation.create({
+                    listingId,
+                    buyerId,
+                    sellerId: listing.sellerId,
+                });
+            }
+            conv.lastMessageAt = new Date();
+            await conv.save();
+
+            const methodLabel = transactionMethod === 'meetup' ? 'Campus Meetup' : 'Delivery';
+            const offerContent = `🤝 [OFFER] Proposed an offer of RM ${offeredPrice} (${methodLabel})${notes ? `\nNote: "${notes}"` : ''}`;
+
+            await Message.create({
+                conversationId: conv._id,
+                senderId: buyerId,
+                content: offerContent,
+            });
+        } catch (msgErr) {
+            console.error('Failed to auto-send offer message to chat:', msgErr);
+        }
+
         // 关联信息返回
         const populatedOrder = await Order.findById(newOrder._id)
             .populate('listingId', 'title price images status')
@@ -75,27 +102,36 @@ exports.createOrder = async (req, res) => {
     }
 };
 
-// @desc    2. 获取用户的订单列表 (作为 Buyer 或 Seller)
+// @desc    2. 获取用户的订单列表 (作为 Buyer 或 Seller 或按 Listing 查询)
 // @route   GET /api/orders
-// @query   role ('buyer' | 'seller'), status (optional)
+// @query   role ('buyer' | 'seller'), status, listingId, buyerId
 exports.getUserOrders = async (req, res) => {
     try {
         const userId = req.user ? req.user._id : req.query.userId;
-        const { role, status } = req.query;
-
-        if (!userId) {
-            return res.status(400).json({ message: 'userId is required (query parameter or auth token)' });
-        }
+        const { role, status, listingId, buyerId } = req.query;
 
         let query = {};
 
-        if (role === 'buyer') {
-            query.buyerId = userId;
-        } else if (role === 'seller') {
-            query.sellerId = userId;
-        } else {
-            // 如果未指定 role，则获取该用户相关的全部订单（无论是买家还是卖家）
-            query.$or = [{ buyerId: userId }, { sellerId: userId }];
+        if (listingId) {
+            query.listingId = listingId;
+        }
+
+        if (buyerId) {
+            query.buyerId = buyerId;
+        }
+
+        if (!listingId && !userId) {
+            return res.status(400).json({ message: 'userId or listingId is required (query parameter or auth token)' });
+        }
+
+        if (userId && !buyerId) {
+            if (role === 'buyer') {
+                query.buyerId = userId;
+            } else if (role === 'seller') {
+                query.sellerId = userId;
+            } else if (!listingId) {
+                query.$or = [{ buyerId: userId }, { sellerId: userId }];
+            }
         }
 
         if (status) {
@@ -166,6 +202,23 @@ exports.acceptOrder = async (req, res) => {
         order.status = 'accepted';
         await order.save();
 
+        // 同步消息通知到私信对话
+        try {
+            const conv = await Conversation.findOne({ listingId: order.listingId, buyerId: order.buyerId });
+            if (conv) {
+                conv.lastMessageAt = new Date();
+                await conv.save();
+                const finalPrice = order.counterPrice || order.offeredPrice;
+                await Message.create({
+                    conversationId: conv._id,
+                    senderId: userId || order.sellerId,
+                    content: `🎉 [OFFER ACCEPTED] The offer of RM ${finalPrice} has been accepted! You can now arrange the handover details here.`,
+                });
+            }
+        } catch (msgErr) {
+            console.error('Failed to post accept message:', msgErr);
+        }
+
         const updatedOrder = await Order.findById(order._id)
             .populate('listingId')
             .populate('buyerId', 'name email avatar')
@@ -200,6 +253,22 @@ exports.rejectOrder = async (req, res) => {
 
         order.status = 'rejected';
         await order.save();
+
+        // 同步消息通知到私信对话
+        try {
+            const conv = await Conversation.findOne({ listingId: order.listingId, buyerId: order.buyerId });
+            if (conv) {
+                conv.lastMessageAt = new Date();
+                await conv.save();
+                await Message.create({
+                    conversationId: conv._id,
+                    senderId: userId || order.sellerId,
+                    content: `❌ [OFFER DECLINED] The offer has been declined by the seller.`,
+                });
+            }
+        } catch (msgErr) {
+            console.error('Failed to post reject message:', msgErr);
+        }
 
         res.json({ message: 'Offer rejected successfully', order });
     } catch (error) {
@@ -240,6 +309,22 @@ exports.counterOrder = async (req, res) => {
         order.status = 'countered';
         await order.save();
 
+        // 同步消息通知到私信对话
+        try {
+            const conv = await Conversation.findOne({ listingId: order.listingId, buyerId: order.buyerId });
+            if (conv) {
+                conv.lastMessageAt = new Date();
+                await conv.save();
+                await Message.create({
+                    conversationId: conv._id,
+                    senderId: userId || order.sellerId,
+                    content: `🔄 [COUNTER-OFFER] Proposed a counter-offer of RM ${counterPrice}${notes ? `\nNote: "${notes}"` : ''}`,
+                });
+            }
+        } catch (msgErr) {
+            console.error('Failed to post counter-offer message:', msgErr);
+        }
+
         const updatedOrder = await Order.findById(order._id)
             .populate('listingId')
             .populate('buyerId', 'name email avatar')
@@ -275,6 +360,22 @@ exports.cancelOrder = async (req, res) => {
 
         order.status = 'cancelled';
         await order.save();
+
+        // 同步消息通知到私信对话
+        try {
+            const conv = await Conversation.findOne({ listingId: order.listingId, buyerId: order.buyerId });
+            if (conv) {
+                conv.lastMessageAt = new Date();
+                await conv.save();
+                await Message.create({
+                    conversationId: conv._id,
+                    senderId: userId || order.buyerId,
+                    content: `🚫 [OFFER CANCELLED] The buyer has cancelled the offer.`,
+                });
+            }
+        } catch (msgErr) {
+            console.error('Failed to post cancel message:', msgErr);
+        }
 
         res.json({ message: 'Offer cancelled successfully', order });
     } catch (error) {
