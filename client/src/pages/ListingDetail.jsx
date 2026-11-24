@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import MakeOfferModal from '../components/MakeOfferModal';
+import { FALLBACK_ITEMS } from './Browse';
 import {
     ArrowLeft,
     CheckCircle2,
@@ -42,10 +43,24 @@ export default function ListingDetail() {
 
                 const res = await fetch(`/api/listings/${id}`);
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.message || 'Listing not found');
-                setListing(data);
+                if (!res.ok) {
+                    const fallback = FALLBACK_ITEMS.find((it) => it._id === id || it.id === id);
+                    if (fallback) {
+                        setListing(fallback);
+                        return;
+                    }
+                    throw new Error(data.message || 'Listing not found');
+                }
+                const item = data.listing || data;
+                setListing(item);
             } catch (err) {
-                setError(err.message);
+                // If network/database error, check demo items as fallback
+                const fallback = FALLBACK_ITEMS.find((it) => it._id === id || it.id === id);
+                if (fallback) {
+                    setListing(fallback);
+                } else {
+                    setError(err.message);
+                }
             } finally {
                 setLoading(false);
             }

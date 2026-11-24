@@ -1,6 +1,23 @@
 const Listing = require('../models/Listing');
-require('../models/User'); // 注册 User schema，确保 populate('sellerId') 能正常工作
+const User = require('../models/User'); // 注册 User schema，确保 populate('sellerId') 能正常工作
 const cloudinary = require('../config/cloudinary');
+
+// Helper to normalize category names across frontend and database
+function normalizeCategory(cat) {
+  if (!cat || cat === 'All') return null;
+  const map = {
+    'Dorm Essentials': 'Dorm',
+    'Fashion': 'Clothing',
+    'Sports': 'Other',
+    'Dorm': 'Dorm',
+    'Clothing': 'Clothing',
+    'Textbooks': 'Textbooks',
+    'Electronics': 'Electronics',
+    'Services': 'Services',
+    'Other': 'Other',
+  };
+  return map[cat] || cat;
+}
 
 /**
  * Helper function: 将内存中的 file Buffer 通过 stream 上传到 Cloudinary
@@ -30,7 +47,7 @@ exports.createListing = async (req, res) => {
             return res.status(400).json({ message: 'sellerId is required' });
         }
 
-        // 并发上传所有图片到 Cloudinary
+        // 并发上传所有图片到 Cloudinary，或使用传入的图片 URL
         let images = [];
         if (req.files && req.files.length > 0) {
             const uploadPromises = req.files.map((file) => uploadToCloudinary(file.buffer));
@@ -39,19 +56,33 @@ exports.createListing = async (req, res) => {
                 imageUrl: url,
                 displayOrder: index,
             }));
+        } else if (Array.isArray(req.body.images) && req.body.images.length > 0) {
+            images = req.body.images.map((img, idx) =>
+                typeof img === 'string'
+                    ? { imageUrl: img, displayOrder: idx }
+                    : { imageUrl: img.imageUrl, displayOrder: img.displayOrder || idx }
+            );
+        } else if (req.body.imageUrl) {
+            images = [{ imageUrl: req.body.imageUrl, displayOrder: 0 }];
         }
 
         const listing = await Listing.create({
             sellerId,
-            title,
-            description,
-            price,
-            category,
+            title: title ? title.trim() : '',
+            description: description ? description.trim() : '',
+            price: Number(price),
+            category: normalizeCategory(category) || category,
             condition,
             images,
+            status: 'active',
         });
 
-        res.status(201).json(listing);
+        const listingObj = listing.toObject();
+        res.status(201).json({
+            ...listingObj,
+            success: true,
+            listing: listingObj,
+        });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -63,16 +94,21 @@ exports.getListingById = async (req, res) => {
     try {
         const listing = await Listing.findById(req.params.id).populate(
             'sellerId',
-            'name email profilePictureUrl averageRating ratingsCount verificationStatus'
+            'name email profilePictureUrl averageRating ratingsCount universityId verificationStatus'
         );
 
         if (!listing || listing.status === 'removed') {
-            return res.status(404).json({ message: 'Listing not found' });
+            return res.status(404).json({ success: false, message: 'Listing not found' });
         }
 
-        res.json(listing);
+        const listingObj = listing.toObject();
+        res.json({
+            ...listingObj,
+            success: true,
+            listing: listingObj,
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -93,7 +129,7 @@ exports.updateListing = async (req, res) => {
         const allowedFields = ['title', 'description', 'price', 'category', 'condition', 'status'];
         allowedFields.forEach((field) => {
             if (req.body[field] !== undefined) {
-                listing[field] = req.body[field];
+                listing[field] = field === 'category' ? (normalizeCategory(req.body[field]) || req.body[field]) : req.body[field];
             }
         });
 
@@ -122,7 +158,12 @@ exports.updateListing = async (req, res) => {
         });
 
         const updatedListing = await listing.save();
-        res.json(updatedListing);
+        const updatedObj = updatedListing.toObject();
+        res.json({
+            ...updatedObj,
+            success: true,
+            listing: updatedObj,
+        });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -144,30 +185,11 @@ exports.deleteListing = async (req, res) => {
         listing.status = 'removed';
         await listing.save();
 
-        res.json({ message: 'Listing removed successfully' });
+        res.json({ success: true, message: 'Listing removed successfully' });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
-
-const User = require('../models/User');
-
-// Helper to normalize category names across frontend and database
-function normalizeCategory(cat) {
-  if (!cat || cat === 'All') return null;
-  const map = {
-    'Dorm Essentials': 'Dorm',
-    'Fashion': 'Clothing',
-    'Sports': 'Other',
-    'Dorm': 'Dorm',
-    'Clothing': 'Clothing',
-    'Textbooks': 'Textbooks',
-    'Electronics': 'Electronics',
-    'Services': 'Services',
-    'Other': 'Other',
-  };
-  return map[cat] || cat;
-}
 
 /**
  * @desc    T09: Search, filter, and sort listings
@@ -251,7 +273,7 @@ exports.getListings = async (req, res) => {
     // Execute query
     const total = await Listing.countDocuments(query);
     const listings = await Listing.find(query)
-      .populate('sellerId', 'name email averageRating ratingsCount universityId profilePictureUrl')
+      .populate('sellerId', 'name email averageRating ratingsCount universityId profilePictureUrl verificationStatus')
       .sort(sortOption)
       .skip(skip)
       .limit(limitNum);
@@ -269,88 +291,6 @@ exports.getListings = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || 'Server error retrieving listings',
-    });
-  }
-};
-
-/**
- * @desc    Get single listing by ID
- * @route   GET /api/listings/:id
- * @access  Public
- */
-exports.getListingById = async (req, res) => {
-  try {
-    const listing = await Listing.findById(req.params.id).populate(
-      'sellerId',
-      'name email averageRating ratingsCount universityId profilePictureUrl'
-    );
-
-    if (!listing) {
-      return res.status(404).json({
-        success: false,
-        message: 'Listing not found',
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      listing,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Server error',
-    });
-  }
-};
-
-/**
- * @desc    Create a new listing
- * @route   POST /api/listings
- * @access  Private (Student)
- */
-exports.createListing = async (req, res) => {
-  try {
-    const { title, description, price, category, condition, images, imageUrl } = req.body;
-
-    if (!title || !description || price === undefined || !category || !condition) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide title, description, price, category, and condition',
-      });
-    }
-
-    // Format images array
-    let formattedImages = [];
-    if (Array.isArray(images) && images.length > 0) {
-      formattedImages = images.map((img, idx) =>
-        typeof img === 'string'
-          ? { imageUrl: img, displayOrder: idx }
-          : { imageUrl: img.imageUrl, displayOrder: img.displayOrder || idx }
-      );
-    } else if (imageUrl) {
-      formattedImages = [{ imageUrl, displayOrder: 0 }];
-    }
-
-    const listing = await Listing.create({
-      sellerId: req.user._id,
-      title: title.trim(),
-      description: description.trim(),
-      price: Number(price),
-      category: normalizeCategory(category) || category,
-      condition,
-      images: formattedImages,
-      status: 'active',
-    });
-
-    res.status(201).json({
-      success: true,
-      listing,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Server error creating listing',
     });
   }
 };

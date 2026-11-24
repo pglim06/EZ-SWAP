@@ -34,15 +34,16 @@ export default function EditListing() {
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message || 'Listing not found');
 
+                const item = data.listing || data;
                 setFormData({
-                    title: data.title,
-                    price: data.price,
-                    category: data.category,
-                    condition: data.condition,
-                    status: data.status,
-                    description: data.description,
+                    title: item.title || '',
+                    price: item.price || '',
+                    category: item.category || 'Textbooks',
+                    condition: item.condition || 'Good',
+                    status: item.status || 'active',
+                    description: item.description || '',
                 });
-                setExistingImages(data.images || []);
+                setExistingImages(item.images || []);
             } catch (err) {
                 setError(err.message);
             } finally {

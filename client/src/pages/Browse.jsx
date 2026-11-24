@@ -39,7 +39,7 @@ const CATEGORIES = [
 const CONDITIONS = ['All', 'New', 'Like New', 'Good', 'Fair', 'Poor']
 
 // Fallback demo items if backend database is offline or empty
-const FALLBACK_ITEMS = [
+export const FALLBACK_ITEMS = [
   {
     _id: 'sample-1',
     title: 'Engineering Mathematics 1 (Calculus & Algebra)',
