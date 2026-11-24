@@ -1,5 +1,4 @@
 const Listing = require('../models/Listing');
- feature/listing-crud
 require('../models/User'); // 注册 User schema，确保 populate('sellerId') 能正常工作
 const cloudinary = require('../config/cloudinary');
 
@@ -478,4 +477,3 @@ exports.seedSampleListings = async (req, res) => {
     });
   }
 };
-main

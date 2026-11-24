@@ -28,22 +28,9 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
- feature/listing-crud
-// Routes (to be added later)
-// app.use('/api/users', require('./routes/userRoutes'));
-app.use('/api/listings', require('./routes/listingRoutes'));
-
-// Authentication Routes (T07)
+// Routes
 app.use('/api/auth', require('./routes/authRoutes'));
-
-// Product Discovery & Listings Routes (T09)
 app.use('/api/listings', require('./routes/listingRoutes'));
-
-// Other routes will be mounted in future tasks
-main
-// app.use('/api/orders', require('./routes/orderRoutes'));
-// app.use('/api/transactions', require('./routes/transactionRoutes'));
-// app.use('/api/reviews', require('./routes/reviewRoutes'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
