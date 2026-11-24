@@ -66,7 +66,7 @@ export default function ListingDetail() {
         if (actionName === 'offer') {
             setShowOfferModal(true);
         } else if (actionName === 'chat') {
-            alert('In-app chat feature will be connected in T11!');
+            navigate(`/messages?listingId=${id}`);
         }
     };
 

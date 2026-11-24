@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
-import { PlusCircle, User, ShoppingBag, LogOut, ShieldCheck } from 'lucide-react'
+import { PlusCircle, User, ShoppingBag, LogOut, ShieldCheck, MessageCircle } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useSocket } from '../context/SocketContext'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
+  const { unreadCount } = useSocket()
 
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-xs">
@@ -29,12 +31,36 @@ export default function Navbar() {
           <Link to="/orders" className="hover:text-blue-600 transition">
             Offers
           </Link>
+          {user && (
+            <Link to="/messages" className="hover:text-blue-600 transition relative flex items-center gap-1.5">
+              <MessageCircle className="w-4 h-4" />
+              Messages
+              {unreadCount > 0 && (
+                <span className="absolute -top-2 -right-3 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </Link>
+          )}
         </nav>
 
         {/* Right side: Auth & Post Ad */}
         <div className="flex items-center gap-3">
           {user ? (
             <div className="flex items-center gap-2">
+              {/* Mobile messages icon */}
+              <Link
+                to="/messages"
+                className="md:hidden relative flex items-center justify-center p-2 text-slate-500 hover:text-blue-600 transition"
+              >
+                <MessageCircle className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </Link>
+
               <Link
                 to={`/profile/${user._id}`}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 hover:text-blue-600 transition"
