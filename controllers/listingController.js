@@ -57,24 +57,6 @@ exports.createListing = async (req, res) => {
     }
 };
 
-// @desc    Get all active listings
-// @route   GET /api/listings
-exports.getListings = async (req, res) => {
-    try {
-        const filter = { status: 'active' };
-        if (req.query.category) filter.category = req.query.category;
-        if (req.query.sellerId) filter.sellerId = req.query.sellerId;
-
-        const listings = await Listing.find(filter)
-            .populate('sellerId', 'name profilePictureUrl averageRating ratingsCount verificationStatus')
-            .sort({ createdAt: -1 });
-
-        res.json(listings);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
 // @desc    Get single listing by ID
 // @route   GET /api/listings/:id
 exports.getListingById = async (req, res) => {
@@ -202,11 +184,17 @@ exports.getListings = async (req, res) => {
       minPrice,
       maxPrice,
       sort,
+      sellerId,
       page = 1,
-      limit = 20,
+      limit = 50,
     } = req.query;
 
     const query = { status: 'active' };
+
+    // Filter by seller ID (e.g. for My Listings or user profile)
+    if (sellerId) {
+      query.sellerId = sellerId;
+    }
 
     // 1. Keyword search (regex on title or description)
     if (keyword && keyword.trim()) {

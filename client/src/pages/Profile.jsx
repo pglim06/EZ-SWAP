@@ -63,10 +63,11 @@ export default function Profile() {
                 });
 
                 // 2. 获取该用户的全部活跃商品
-                const listingsRes = await fetch(`/api/listings?sellerId=${profileUserId}`);
+                const listingsRes = await fetch(`/api/listings?sellerId=${profileUserId}&limit=100`);
                 const listingsData = await listingsRes.json();
                 if (listingsRes.ok) {
-                    setListings(listingsData);
+                    const items = Array.isArray(listingsData) ? listingsData : (listingsData.listings || []);
+                    setListings(items);
                 }
             } catch (err) {
                 setError(err.message);

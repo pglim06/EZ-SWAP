@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { Upload, X, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
 const CATEGORIES = ['Textbooks', 'Electronics', 'Dorm', 'Services', 'Clothing', 'Other'];
@@ -7,6 +8,9 @@ const CONDITIONS = ['New', 'Like New', 'Good', 'Fair', 'Poor'];
 
 export default function CreateListing() {
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const storedUser = localStorage.getItem('currentUser');
+    const currentUser = user || (storedUser ? JSON.parse(storedUser) : null);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -60,8 +64,7 @@ export default function CreateListing() {
             data.append('condition', formData.condition);
             data.append('description', formData.description);
 
-            // TODO: 等 T07 (User Auth) 合并后，从登录态读取真实 user._id
-            data.append('sellerId', '650000000000000000000001');
+            data.append('sellerId', currentUser?._id || '650000000000000000000001');
 
             files.forEach((file) => {
                 data.append('images', file);

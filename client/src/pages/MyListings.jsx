@@ -1,22 +1,31 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Pencil, Trash2, PlusCircle, PackageOpen, Loader2 } from 'lucide-react';
-
-// 临时测试用 sellerId，需与 CreateListing.jsx 保持一致（等 T07 合并后替换为登录用户 ID）
-const TEST_SELLER_ID = '650000000000000000000001';
+import { Pencil, Trash2, PlusCircle, PackageOpen, Loader2, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function MyListings() {
+    const { user } = useAuth();
+    const storedUser = localStorage.getItem('currentUser');
+    const currentUser = user || (storedUser ? JSON.parse(storedUser) : null);
+    const sellerId = currentUser?._id;
+
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
     const fetchMyListings = async () => {
+        if (!sellerId) {
+            setLoading(false);
+            return;
+        }
+
         try {
             setLoading(true);
-            const res = await fetch(`/api/listings?sellerId=${TEST_SELLER_ID}`);
+            const res = await fetch(`/api/listings?sellerId=${sellerId}&limit=100`);
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Failed to load listings');
-            setListings(data);
+            const items = Array.isArray(data) ? data : (data.listings || []);
+            setListings(items);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -26,7 +35,7 @@ export default function MyListings() {
 
     useEffect(() => {
         fetchMyListings();
-    }, []);
+    }, [sellerId]);
 
     const handleDelete = async (id, title) => {
         if (!window.confirm(`Are you sure you want to remove "${title}"?`)) {
@@ -50,8 +59,26 @@ export default function MyListings() {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-20 text-slate-500 gap-2">
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
                 <span>Loading your listings...</span>
+            </div>
+        );
+    }
+
+    if (!currentUser) {
+        return (
+            <div className="max-w-md mx-auto px-6 py-20 text-center">
+                <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <User className="w-7 h-7" />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 mb-2">Sign in to view your listings</h2>
+                <p className="text-sm text-slate-500 mb-6">You need to sign in with your campus student account to manage your listings.</p>
+                <Link
+                    to="/login"
+                    className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition shadow-xs"
+                >
+                    Sign In
+                </Link>
             </div>
         );
     }
@@ -130,7 +157,7 @@ export default function MyListings() {
                                     </Link>
                                     <button
                                         onClick={() => handleDelete(item._id, item.title)}
-                                        className="flex-1 flex items-center justify-center gap-1.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 py-2 rounded-lg transition"
+                                        className="flex-1 flex items-center justify-center gap-1.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 py-2 rounded-lg transition cursor-pointer"
                                     >
                                         <Trash2 className="w-3.5 h-3.5" /> Delete
                                     </button>
