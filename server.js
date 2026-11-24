@@ -31,8 +31,10 @@ app.get('/api/health', (req, res) => {
 // Authentication Routes (T07)
 app.use('/api/auth', require('./routes/authRoutes'));
 
+// Product Discovery & Listings Routes (T09)
+app.use('/api/listings', require('./routes/listingRoutes'));
+
 // Other routes will be mounted in future tasks
-// app.use('/api/listings', require('./routes/listingRoutes'));
 // app.use('/api/orders', require('./routes/orderRoutes'));
 // app.use('/api/transactions', require('./routes/transactionRoutes'));
 // app.use('/api/reviews', require('./routes/reviewRoutes'));
