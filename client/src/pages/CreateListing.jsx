@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Upload, X, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
@@ -8,9 +8,13 @@ const CONDITIONS = ['New', 'Used'];
 
 export default function CreateListing() {
     const navigate = useNavigate();
-    const { user } = useAuth();
-    const storedUser = localStorage.getItem('currentUser');
-    const currentUser = user || (storedUser ? JSON.parse(storedUser) : null);
+    const { user: currentUser } = useAuth();
+
+    useEffect(() => {
+        if (!currentUser) {
+            navigate('/login');
+        }
+    }, [currentUser, navigate]);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -64,7 +68,9 @@ export default function CreateListing() {
             data.append('condition', formData.condition);
             data.append('description', formData.description);
 
-            data.append('sellerId', currentUser?._id || '650000000000000000000001');
+            if (currentUser?._id) {
+                data.append('sellerId', currentUser._id);
+            }
 
             files.forEach((file) => {
                 data.append('images', file);

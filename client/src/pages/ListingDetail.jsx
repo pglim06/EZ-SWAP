@@ -35,9 +35,7 @@ export default function ListingDetail() {
     const [similarListings, setSimilarListings] = useState([]);
 
     const { user } = useAuth();
-    const storedUser = localStorage.getItem('currentUser');
-    const effectiveUser = user || (storedUser ? JSON.parse(storedUser) : null);
-    const currentUserId = effectiveUser?._id || null;
+    const currentUserId = user?._id || null;
 
     useEffect(() => {
         const fetchListing = async () => {
@@ -211,7 +209,7 @@ export default function ListingDetail() {
                                 <Tag className="w-3 h-3" /> {listing.category}
                             </span>
                             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
-                                Condition: {listing.condition}
+                                Condition: {listing.condition === 'New' ? 'New' : 'Used'}
                             </span>
                             {listing.status === 'reserved' && (
                                 <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
@@ -320,7 +318,7 @@ export default function ListingDetail() {
 
                             <div>
                                 <h4 className="font-bold text-slate-900 text-base flex items-center gap-1.5">
-                                    {seller.name || 'Wong Ann Rick'}
+                                    {seller.name || 'Campus Seller'}
                                 </h4>
 
                                 <div className="mt-1 flex items-center gap-2">

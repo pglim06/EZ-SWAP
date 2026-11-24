@@ -4,9 +4,7 @@ import { Pencil, Trash2, PlusCircle, PackageOpen, Loader2, User } from 'lucide-r
 import { useAuth } from '../context/AuthContext';
 
 export default function MyListings() {
-    const { user } = useAuth();
-    const storedUser = localStorage.getItem('currentUser');
-    const currentUser = user || (storedUser ? JSON.parse(storedUser) : null);
+    const { user: currentUser } = useAuth();
     const sellerId = currentUser?._id;
 
     const [listings, setListings] = useState([]);
@@ -141,7 +139,7 @@ export default function MyListings() {
 
                             <div className="p-4 flex-1 flex flex-col">
                                 <div className="text-xs font-semibold text-blue-600 mb-1">
-                                    {item.category} · {item.condition}
+                                    {item.category} · {item.condition === 'New' ? 'New' : 'Used'}
                                 </div>
                                 <h2 className="font-bold text-slate-900 line-clamp-1 mb-1">{item.title}</h2>
                                 <p className="text-lg font-extrabold text-slate-800 mb-4">

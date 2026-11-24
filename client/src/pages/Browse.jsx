@@ -140,15 +140,29 @@ export default function Browse() {
       if (!res.ok) throw new Error('Failed to fetch from backend')
 
       const data = await res.json()
+      const hasActiveFilters =
+        search.trim() !== '' ||
+        selectedCat !== 'All' ||
+        selectedCondition !== 'All' ||
+        minPrice !== '' ||
+        maxPrice !== '' ||
+        sort !== ''
+
       if (data.success && Array.isArray(data.listings) && data.listings.length > 0) {
-        setListings(data.listings)
+        // Double-check price bounds client-side
+        const priceFiltered = data.listings.filter((item) => {
+          if (minPrice !== '' && Number(item.price) < Number(minPrice)) return false
+          if (maxPrice !== '' && Number(item.price) > Number(maxPrice)) return false
+          return true
+        })
+        setListings(priceFiltered)
         setIsUsingLiveDb(true)
-      } else if (data.success && data.total === 0 && !search && selectedCat === 'All') {
+      } else if (data.success && data.total === 0 && !hasActiveFilters) {
         // If DB is completely empty and no filters active, use fallback
         setListings(FALLBACK_ITEMS)
         setIsUsingLiveDb(false)
       } else {
-        setListings(data.listings || [])
+        setListings([])
         setIsUsingLiveDb(true)
       }
     } catch {
@@ -169,8 +183,8 @@ export default function Browse() {
           selectedCondition === 'All' ||
           item.condition === selectedCondition ||
           (selectedCondition === 'Used' && ['Like New', 'Good', 'Fair', 'Poor'].includes(item.condition))
-        const matchesMin = minPrice === '' || item.price >= Number(minPrice)
-        const matchesMax = maxPrice === '' || item.price <= Number(maxPrice)
+        const matchesMin = minPrice === '' || Number(item.price) >= Number(minPrice)
+        const matchesMax = maxPrice === '' || Number(item.price) <= Number(maxPrice)
         return matchesSearch && matchesCat && matchesCond && matchesMin && matchesMax
       })
 
@@ -231,18 +245,8 @@ export default function Browse() {
       <section className="bg-white border-b border-slate-200 py-6 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
               UTM Campus Marketplace
-              <span className="text-xs bg-blue-100 text-blue-700 font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                {isUsingLiveDb ? (
-                  <>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Live MongoDB
-                  </>
-                ) : (
-                  'Live Ads'
-                )}
-              </span>
             </h1>
             <p className="text-xs text-slate-500 mt-1">
               Buy, sell & swap preloved items directly with verified university peers.
@@ -480,7 +484,7 @@ export default function Browse() {
                         <Heart className="w-4 h-4" />
                       </button>
                       <span className="absolute bottom-3 left-3 text-[11px] font-semibold bg-slate-900/75 backdrop-blur-xs text-white px-2 py-0.5 rounded-md">
-                        {item.condition}
+                        {item.condition === 'New' ? 'New' : 'Used'}
                       </span>
                     </div>
 

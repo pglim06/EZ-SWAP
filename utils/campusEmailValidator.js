@@ -1,45 +1,48 @@
 /**
- * Campus Email Validation Utility
- * Enforces verified university email domains for EZ Swap marketplace safety.
+ * Email Validation & Verification Tier Utility
+ * T07 Logic:
+ * - Accepts any valid email address format.
+ * - Emails ending in @graduate.utm.my (or @utm.my) grant 'verified' UTM campus student status.
+ * - Other emails (e.g. @gmail.com, @yahoo.com) register as 'unverified' status.
  */
 
-const APPROVED_DOMAINS = [
-  'graduate.utm.my',
-  'utm.my',
-  'edu.my',
-  'edu'
-];
-
-/**
- * Validates whether an email belongs to an approved university domain
- * @param {string} email
- * @returns {{ isValid: boolean, domain?: string, message?: string }}
- */
-function validateCampusEmail(email) {
+function validateAndTierEmail(email) {
   if (!email || typeof email !== 'string') {
-    return { isValid: false, message: 'University email is required.' };
+    return { isValid: false, message: 'Email address is required.' };
   }
 
   const trimmed = email.trim().toLowerCase();
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(trimmed)) {
-    return { isValid: false, message: 'Invalid email address format.' };
+    return { isValid: false, message: 'Please provide a valid email address.' };
   }
 
   const domain = trimmed.split('@')[1];
-  const isApproved = APPROVED_DOMAINS.some(
-    (allowed) => domain === allowed || domain.endsWith('.' + allowed)
-  );
+  const isUtmStudent = domain === 'graduate.utm.my' || domain === 'utm.my' || domain.endsWith('.utm.my');
 
-  if (!isApproved) {
-    return {
-      isValid: false,
-      domain,
-      message: `Registration requires a valid campus email (e.g. @graduate.utm.my, @utm.my, .edu). Domain '@${domain}' is not permitted.`
-    };
-  }
-
-  return { isValid: true, domain };
+  return {
+    isValid: true,
+    email: trimmed,
+    domain,
+    isUtmStudent,
+    verificationStatus: isUtmStudent ? 'verified' : 'unverified',
+    tierLabel: isUtmStudent ? 'Verified UTM Student' : 'Unverified User',
+  };
 }
 
-module.exports = { validateCampusEmail, APPROVED_DOMAINS };
+// Backward compatibility alias for legacy tests
+function validateCampusEmail(email) {
+  const result = validateAndTierEmail(email);
+  return {
+    isValid: result.isValid,
+    domain: result.domain,
+    isUtmStudent: result.isUtmStudent,
+    verificationStatus: result.verificationStatus,
+    message: result.message,
+  };
+}
+
+module.exports = {
+  validateAndTierEmail,
+  validateCampusEmail,
+};

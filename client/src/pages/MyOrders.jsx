@@ -25,9 +25,7 @@ import {
 } from 'lucide-react';
 
 export default function MyOrders() {
-    const { user } = useAuth();
-    const storedUser = localStorage.getItem('currentUser');
-    const currentUser = user || (storedUser ? JSON.parse(storedUser) : null);
+    const { user: currentUser } = useAuth();
 
     const [activeTab, setActiveTab] = useState('received'); // 'received' (Seller) | 'sent' (Buyer)
     const [orders, setOrders] = useState([]);

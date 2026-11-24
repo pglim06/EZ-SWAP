@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useSocket } from '../context/SocketContext'
 
 export default function Navbar() {
-  const { user, logout } = useAuth()
+  const { user, isGuest, logout } = useAuth()
   const { unreadCount } = useSocket()
 
   return (
@@ -22,10 +22,10 @@ export default function Navbar() {
 
         {/* Center links */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-          <Link to="/" className="hover:text-blue-600 transition flex items-center gap-1.5 font-semibold text-blue-600">
+          <Link to="/browse" className="hover:text-blue-600 transition flex items-center gap-1.5 font-semibold text-blue-600">
             <ShoppingBag className="w-4 h-4" /> Marketplace Ads
           </Link>
-          <Link to="/my-listings" className="hover:text-blue-600 transition">
+          <Link to={user ? "/my-listings" : "/login"} className="hover:text-blue-600 transition">
             My Listings
           </Link>
           {user && (
@@ -62,9 +62,13 @@ export default function Navbar() {
                 to={`/profile/${user._id}`}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 hover:text-blue-600 transition"
               >
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span className={`w-2 h-2 rounded-full ${user.verificationStatus === 'verified' ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
                 <span className="max-w-[120px] truncate">{user.name || user.email}</span>
-                <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                {user.verificationStatus === 'verified' ? (
+                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600" title="Verified UTM Student" />
+                ) : (
+                  <span className="text-[10px] bg-slate-200 text-slate-600 px-1 py-0.2 rounded">Unverified</span>
+                )}
               </Link>
 
               <button
@@ -78,6 +82,11 @@ export default function Navbar() {
             </div>
           ) : (
             <div className="flex items-center gap-2">
+              {isGuest && (
+                <span className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200">
+                  Guest Mode
+                </span>
+              )}
               <Link
                 to="/login"
                 className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-50 transition"

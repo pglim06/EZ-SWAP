@@ -27,7 +27,12 @@ exports.getUserProfile = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        res.json(user);
+        const userObj = user.toObject ? user.toObject() : user;
+        res.json({
+            success: true,
+            user: userObj,
+            ...userObj,
+        });
     } catch (error) {
         // 如果是无效的 ObjectId 格式
         if (error.kind === 'ObjectId') {

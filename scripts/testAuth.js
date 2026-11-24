@@ -21,20 +21,20 @@ async function runAuthTests() {
   console.log('EZ SWAP — T07 User Auth & Email Verification Test');
   console.log('='.repeat(55));
 
-  // 1. Campus Email Domain Validator
-  console.log('\n[1/5] Testing Campus Email Domain Validator...');
-  const invalidEmail = validateCampusEmail('fake_student@gmail.com');
-  if (!invalidEmail.isValid) {
-    console.log('  ✓ Correctly rejected non-campus email (gmail.com)');
+  // 1. Campus Email Domain Tier Validator
+  console.log('\n[1/5] Testing Email Domain Tier Validator (T07)...');
+  const gmailCheck = validateCampusEmail('fake_student@gmail.com');
+  if (gmailCheck.isValid && gmailCheck.verificationStatus === 'unverified') {
+    console.log('  ✓ Correctly accepted standard email (gmail.com) as unverified user');
   } else {
-    throw new Error('Failed to reject non-campus email');
+    throw new Error('Failed to classify gmail as unverified user');
   }
 
   const validEmail = validateCampusEmail(TEST_EMAIL);
-  if (validEmail.isValid) {
-    console.log('  ✓ Correctly accepted official UTM student email (@graduate.utm.my)');
+  if (validEmail.isValid && validEmail.verificationStatus === 'verified') {
+    console.log('  ✓ Correctly accepted official UTM student email (@graduate.utm.my) as verified user');
   } else {
-    throw new Error('Failed to accept valid UTM email: ' + validEmail.message);
+    throw new Error('Failed to accept valid UTM email as verified user');
   }
 
   // 2. Password Hashing & Verification

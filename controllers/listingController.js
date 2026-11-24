@@ -292,13 +292,19 @@ exports.getListings = async (req, res) => {
       .skip(skip)
       .limit(limitNum);
 
+    const normalizedListings = listings.map((l) => {
+      const obj = l.toObject ? l.toObject() : { ...l };
+      obj.condition = obj.condition === 'New' ? 'New' : 'Used';
+      return obj;
+    });
+
     res.status(200).json({
       success: true,
-      count: listings.length,
+      count: normalizedListings.length,
       total,
       page: pageNum,
       pages: Math.ceil(total / limitNum) || 1,
-      listings,
+      listings: normalizedListings,
     });
   } catch (error) {
     console.error('getListings error:', error);
