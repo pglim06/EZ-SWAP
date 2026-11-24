@@ -5,6 +5,7 @@ import { useSocket } from '../context/SocketContext'
 import MakeOfferModal from '../components/MakeOfferModal'
 import MeetupSchedulingModal from '../components/MeetupSchedulingModal'
 import DisputeModal from '../components/DisputeModal'
+import RatingModal from '../components/RatingModal'
 import {
   MessageCircle,
   Send,
@@ -24,6 +25,7 @@ import {
   AlertTriangle,
   Calendar,
   MapPin,
+  Star,
 } from 'lucide-react'
 
 export default function Messages() {
@@ -57,6 +59,8 @@ export default function Messages() {
   const [showOfferModal, setShowOfferModal] = useState(false)
   const [showSchedulingModal, setShowSchedulingModal] = useState(false)
   const [showDisputeModal, setShowDisputeModal] = useState(false)
+  const [showRatingModal, setShowRatingModal] = useState(false)
+  const [hasReviewed, setHasReviewed] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
   const [showCounterInput, setShowCounterInput] = useState(false)
   const [counterPrice, setCounterPrice] = useState('')
@@ -399,6 +403,31 @@ export default function Messages() {
       setActionLoading(false)
     }
   }
+
+  // ─── T15: Check if current user already reviewed this transaction ─────
+  useEffect(() => {
+    if (!activeTransaction?._id || !currentUserId) {
+      setHasReviewed(false)
+      return
+    }
+    if (activeTransaction.status !== 'completed') {
+      setHasReviewed(false)
+      return
+    }
+    const checkReview = async () => {
+      try {
+        const res = await fetch(
+          `/api/reviews/check?transactionId=${activeTransaction._id}&userId=${currentUserId}`,
+          { credentials: 'include' }
+        )
+        const data = await res.json()
+        if (res.ok) setHasReviewed(data.hasReviewed)
+      } catch {
+        // silent
+      }
+    }
+    checkReview()
+  }, [activeTransaction?._id, activeTransaction?.status, currentUserId])
 
   // ─── Typing indicator logic ───────────────────────────────────────
   const handleInputChange = (e) => {
@@ -777,6 +806,22 @@ export default function Messages() {
                             </span>
                           )}
 
+                          {/* T15: Leave a Review button — appears when transaction is completed and user hasn't reviewed yet */}
+                          {activeTransaction?.status === 'completed' && !hasReviewed && (
+                            <button
+                              onClick={() => setShowRatingModal(true)}
+                              className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold px-2.5 py-1.5 rounded-lg transition shadow-xs cursor-pointer text-xs"
+                            >
+                              <Star className="w-3.5 h-3.5 fill-white" /> Leave a Review
+                            </button>
+                          )}
+
+                          {activeTransaction?.status === 'completed' && hasReviewed && (
+                            <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 flex items-center gap-1">
+                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" /> Reviewed
+                            </span>
+                          )}
+
                           {activeTransaction?.status === 'disputed' && (
                             <span className="text-[11px] font-bold text-red-700 bg-red-100 px-2 py-1 rounded-md border border-red-300 flex items-center gap-1">
                               <AlertTriangle className="w-3 h-3" /> Disputed
@@ -1042,6 +1087,20 @@ export default function Messages() {
       )}
 
       {/* T14: Dispute Flag Modal right inside Chat */}
+      {/* T15: Rating Modal */}
+      {showRatingModal && activeTransaction && (
+        <RatingModal
+          transaction={activeTransaction}
+          currentUserId={currentUserId}
+          otherUser={otherUser}
+          onClose={() => setShowRatingModal(false)}
+          onSubmitted={() => {
+            setShowRatingModal(false)
+            setHasReviewed(true)
+          }}
+        />
+      )}
+
       {showDisputeModal && activeTransaction && (
         <DisputeModal
           transaction={activeTransaction}

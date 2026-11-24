@@ -32,9 +32,10 @@ export default function Profile() {
 
     const [user, setUser] = useState(null);
     const [listings, setListings] = useState([]);
+    const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [activeTab, setActiveTab] = useState('listings'); // 'listings' | 'edit'
+    const [activeTab, setActiveTab] = useState('listings'); // 'listings' | 'reviews' | 'edit'
 
     // 编辑表单 State
     const [editForm, setEditForm] = useState({
@@ -87,6 +88,13 @@ export default function Profile() {
                 const listingsData = await listingsRes.json();
                 if (listingsRes.ok) {
                     setListings(Array.isArray(listingsData) ? listingsData : (listingsData.listings || []));
+                }
+
+                // 3. T15: 获取该用户收到的评价 (Reviews received)
+                const reviewsRes = await fetch(`/api/reviews/user/${profileUserId}?limit=20`);
+                const reviewsData = await reviewsRes.json();
+                if (reviewsRes.ok) {
+                    setReviews(reviewsData.reviews || []);
                 }
             } catch (err) {
                 setError(err.message);
@@ -324,6 +332,30 @@ export default function Profile() {
                 </div>
             </div>
 
+            {/* ── Tab Buttons ── */}
+            <div className="flex gap-2 mt-6 border-t border-slate-100 pt-5">
+                <button
+                    onClick={() => setActiveTab('listings')}
+                    className={`flex-1 py-2 text-xs font-semibold rounded-xl transition cursor-pointer ${activeTab === 'listings' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                >
+                    Listings ({listings.length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('reviews')}
+                    className={`flex-1 py-2 text-xs font-semibold rounded-xl transition cursor-pointer ${activeTab === 'reviews' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                >
+                    Reviews ({reviews.length})
+                </button>
+                {isOwner && (
+                    <button
+                        onClick={() => setActiveTab(activeTab === 'edit' ? 'listings' : 'edit')}
+                        className={`flex-1 py-2 text-xs font-semibold rounded-xl transition cursor-pointer ${activeTab === 'edit' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                    >
+                        Edit Profile
+                    </button>
+                )}
+            </div>
+
             {/* 标签内容区域 */}
             {activeTab === 'edit' && isOwner ? (
                 /* 编辑资料卡片 */
@@ -471,6 +503,72 @@ export default function Profile() {
                             </div>
                         </div>
                     </div>
+                </div>
+            ) : activeTab === 'reviews' ? (
+                /* T15: Reviews received by this user */
+                <div>
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <Star className="w-5 h-5 text-amber-500 fill-amber-400" />
+                            Reviews for {user.name}
+                            <span className="text-xs font-normal text-slate-400">({reviews.length})</span>
+                        </h2>
+                    </div>
+
+                    {reviews.length === 0 ? (
+                        <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center">
+                            <Star className="w-10 h-10 text-slate-200 mx-auto mb-3" />
+                            <p className="text-slate-500 text-sm">No reviews yet. Complete a transaction to receive your first rating!</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {reviews.map((review) => (
+                                <div key={review._id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+                                    <div className="flex items-start gap-4">
+                                        {/* Reviewer avatar */}
+                                        <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-black text-sm flex items-center justify-center shrink-0 overflow-hidden">
+                                            {review.reviewerId?.profilePictureUrl ? (
+                                                <img src={review.reviewerId.profilePictureUrl} alt={review.reviewerId.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                (review.reviewerId?.name || 'U').charAt(0).toUpperCase()
+                                            )}
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                                                <span className="text-sm font-bold text-slate-900">
+                                                    {review.reviewerId?.name || 'Anonymous'}
+                                                </span>
+                                                <div className="flex items-center gap-0.5">
+                                                    {[1,2,3,4,5].map((s) => (
+                                                        <Star
+                                                            key={s}
+                                                            className={`w-4 h-4 ${s <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200 fill-slate-100'}`}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 mt-0.5 mb-2">
+                                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${review.reviewerRole === 'buyer' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                                                    {review.reviewerRole === 'buyer' ? 'Buyer' : 'Seller'}
+                                                </span>
+                                                <span className="text-[11px] text-slate-400">
+                                                    {new Date(review.createdAt).toLocaleDateString()}
+                                                </span>
+                                            </div>
+
+                                            {review.comment ? (
+                                                <p className="text-sm text-slate-600 leading-relaxed">"{review.comment}"</p>
+                                            ) : (
+                                                <p className="text-xs text-slate-400 italic">No comment left.</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             ) : (
                 /* 在售商品列表 */
