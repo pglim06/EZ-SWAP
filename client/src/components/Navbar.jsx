@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { PlusCircle, User, ShoppingBag, LogOut, ShieldCheck, MessageCircle } from 'lucide-react'
+import { PlusCircle, User, ShoppingBag, LogOut, ShieldCheck, MessageCircle, Tag } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useSocket } from '../context/SocketContext'
 
@@ -28,6 +28,12 @@ export default function Navbar() {
           <Link to="/my-listings" className="hover:text-blue-600 transition">
             My Listings
           </Link>
+          {user && (
+            <Link to="/orders" className="hover:text-blue-600 transition flex items-center gap-1.5">
+              <Tag className="w-4 h-4" />
+              Offers & Deals
+            </Link>
+          )}
           {user && (
             <Link to="/messages" className="hover:text-blue-600 transition relative flex items-center gap-1.5">
               <MessageCircle className="w-4 h-4" />

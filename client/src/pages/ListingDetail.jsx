@@ -200,6 +200,11 @@ export default function ListingDetail() {
                             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
                                 Condition: {listing.condition}
                             </span>
+                            {listing.status === 'reserved' && (
+                                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                                    Reserved
+                                </span>
+                            )}
                         </div>
 
                         <h1 className="text-2xl font-black text-slate-900 leading-snug mb-3">
@@ -237,12 +242,18 @@ export default function ListingDetail() {
                                 </div>
                             ) : (
                                 <div className="space-y-2.5">
-                                    <button
-                                        onClick={() => handleActionClick('offer')}
-                                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 rounded-xl shadow-xs transition text-sm flex items-center justify-center gap-2 cursor-pointer"
-                                    >
-                                        Make Offer
-                                    </button>
+                                    {listing.status === 'reserved' ? (
+                                        <div className="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-xl text-xs font-semibold text-center">
+                                            🤝 Deal Agreed! Handover is currently being scheduled.
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleActionClick('offer')}
+                                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 rounded-xl shadow-xs transition text-sm flex items-center justify-center gap-2 cursor-pointer"
+                                        >
+                                            Make Offer
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => handleActionClick('chat')}
                                         className="w-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 font-semibold py-3.5 rounded-xl transition text-sm flex items-center justify-center gap-2 cursor-pointer"

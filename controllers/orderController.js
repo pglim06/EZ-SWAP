@@ -2,6 +2,7 @@ const Order = require('../models/Order');
 const Listing = require('../models/Listing');
 const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
+const Transaction = require('../models/Transaction');
 require('../models/User'); // 确保 User 模型已被注册用于 populate
 
 // @desc    1. Buyer 创建/发送报价 (Make Offer)
@@ -202,7 +203,23 @@ exports.acceptOrder = async (req, res) => {
         order.status = 'accepted';
         await order.save();
 
-        // 同步消息通知到私信对话
+        // T13: Generate unique Transaction upon accepted offer
+        let transaction = await Transaction.findOne({ orderId: order._id });
+        if (!transaction) {
+            transaction = await Transaction.create({
+                orderId: order._id,
+                listingId: order.listingId,
+                buyerId: order.buyerId,
+                sellerId: order.sellerId,
+                handoverMethod: order.transactionMethod || 'meetup',
+                status: 'in_progress',
+            });
+        }
+
+        // T13: Reserve listing so other users know a deal is in progress
+        await Listing.findByIdAndUpdate(order.listingId, { status: 'reserved' });
+
+        // 同步消息通知到私信对话 (通知交易已建立并附带唯一 Transaction ID)
         try {
             const conv = await Conversation.findOne({ listingId: order.listingId, buyerId: order.buyerId });
             if (conv) {
@@ -212,7 +229,7 @@ exports.acceptOrder = async (req, res) => {
                 await Message.create({
                     conversationId: conv._id,
                     senderId: userId || order.sellerId,
-                    content: `🎉 [OFFER ACCEPTED] The offer of RM ${finalPrice} has been accepted! You can now arrange the handover details here.`,
+                    content: `🎉 [OFFER ACCEPTED] The offer of RM ${finalPrice} has been accepted!\n🔖 Transaction ID: ${transaction.transactionCode}\n📍 Handover setup is now open. You can arrange the meetup time and campus location here.`,
                 });
             }
         } catch (msgErr) {
@@ -224,7 +241,10 @@ exports.acceptOrder = async (req, res) => {
             .populate('buyerId', 'name email avatar')
             .populate('sellerId', 'name email avatar');
 
-        res.json(updatedOrder);
+        res.json({
+            ...updatedOrder.toObject(),
+            transaction,
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

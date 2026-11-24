@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import MeetupSchedulingModal from '../components/MeetupSchedulingModal';
 import {
     Tag,
     Handshake,
@@ -14,7 +15,11 @@ import {
     MessageSquare,
     DollarSign,
     ArrowRight,
-    X
+    X,
+    Calendar,
+    MapPin,
+    Copy,
+    Check
 } from 'lucide-react';
 
 export default function MyOrders() {
@@ -24,6 +29,7 @@ export default function MyOrders() {
 
     const [activeTab, setActiveTab] = useState('received'); // 'received' (Seller) | 'sent' (Buyer)
     const [orders, setOrders] = useState([]);
+    const [transactionsMap, setTransactionsMap] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -34,7 +40,13 @@ export default function MyOrders() {
     const [counterNotesInput, setCounterNotesInput] = useState('');
     const [actionLoading, setActionLoading] = useState(false);
 
-    // 获取订单列表
+    // T13: Meetup & Handover Scheduling Modal 状态
+    const [schedulingModalOpen, setSchedulingModalOpen] = useState(false);
+    const [selectedOrderForModal, setSelectedOrderForModal] = useState(null);
+    const [selectedTxForModal, setSelectedTxForModal] = useState(null);
+    const [copiedTxId, setCopiedTxId] = useState(null);
+
+    // 获取订单列表与交易详情
     const fetchOrders = async () => {
         if (!currentUser?._id) {
             setLoading(false);
@@ -45,11 +57,27 @@ export default function MyOrders() {
             setLoading(true);
             setError('');
             const role = activeTab === 'received' ? 'seller' : 'buyer';
-            const res = await fetch(`/api/orders?userId=${currentUser._id}&role=${role}`);
-            const data = await res.json();
+            
+            const [ordersRes, txRes] = await Promise.all([
+                fetch(`/api/orders?userId=${currentUser._id}&role=${role}`),
+                fetch(`/api/transactions?userId=${currentUser._id}`),
+            ]);
 
-            if (!res.ok) throw new Error(data.message || 'Failed to fetch orders');
+            const data = await ordersRes.json();
+            if (!ordersRes.ok) throw new Error(data.message || 'Failed to fetch orders');
             setOrders(data);
+
+            if (txRes.ok) {
+                const txList = await txRes.json();
+                const txMap = {};
+                if (Array.isArray(txList)) {
+                    txList.forEach((tx) => {
+                        const oid = typeof tx.orderId === 'object' ? tx.orderId?._id : tx.orderId;
+                        if (oid) txMap[oid] = tx;
+                    });
+                }
+                setTransactionsMap(txMap);
+            }
         } catch (err) {
             setError(err.message);
         } finally {
@@ -158,6 +186,21 @@ export default function MyOrders() {
         }
     };
 
+    // 5. 打开 T13 Meetup & Handover 安排弹窗
+    const openHandoverModal = (order, tx) => {
+        setSelectedOrderForModal(order);
+        setSelectedTxForModal(tx);
+        setSchedulingModalOpen(true);
+    };
+
+    const handleCopyTxCode = (txCode) => {
+        if (txCode) {
+            navigator.clipboard.writeText(txCode);
+            setCopiedTxId(txCode);
+            setTimeout(() => setCopiedTxId(null), 2000);
+        }
+    };
+
     // 状态徽章渲染辅助
     const renderStatusBadge = (status) => {
         switch (status) {
@@ -223,7 +266,7 @@ export default function MyOrders() {
                     Offers & Deals
                 </h1>
                 <p className="text-xs text-slate-500 mt-1">
-                    Manage price negotiations, review buyer proposals, and counter-offers
+                    Manage price negotiations, review buyer proposals, and setup campus handovers (T13)
                 </p>
             </div>
 
@@ -253,7 +296,7 @@ export default function MyOrders() {
             {loading ? (
                 <div className="py-20 flex items-center justify-center text-slate-400 gap-2">
                     <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-                    <span className="text-sm">Loading offers...</span>
+                    <span className="text-sm">Loading offers & transactions...</span>
                 </div>
             ) : error ? (
                 <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-2xl text-xs flex items-center gap-2">
@@ -287,6 +330,7 @@ export default function MyOrders() {
                             listing?.images && listing.images.length > 0
                                 ? listing.images[0].imageUrl
                                 : 'https://via.placeholder.com/150';
+                        const tx = transactionsMap[order._id];
 
                         return (
                             <div
@@ -322,7 +366,7 @@ export default function MyOrders() {
                                     <div>{renderStatusBadge(order.status)}</div>
                                 </div>
 
-                                {/* 协商详情 (交接方式、还价、留言) */}
+                                {/* 协商详情 (交接方式、交易对象、时间) */}
                                 <div className="py-3.5 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-slate-50/70 rounded-xl p-3 my-3">
                                     <div>
                                         <span className="text-slate-400 block font-medium">Handover Method</span>
@@ -374,6 +418,113 @@ export default function MyOrders() {
                                                 <span>Seller Counter-Offered: <strong>RM {order.counterPrice}</strong></span>
                                             </p>
                                         )}
+                                    </div>
+                                )}
+
+                                {/* T13: 已接受报价下的 Transaction ID 与 Handover Setup 卡片 */}
+                                {order.status === 'accepted' && (
+                                    <div className="my-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl p-4 sm:p-5">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-emerald-100">
+                                            <div className="flex items-center gap-2">
+                                                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                                                <div>
+                                                    <h4 className="text-xs font-black text-emerald-900 uppercase tracking-wide">
+                                                        Deal Agreed & Transaction Active
+                                                    </h4>
+                                                    <p className="text-[11px] text-emerald-700">
+                                                        Official transaction generated. Coordinate physical handover below.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {tx?.transactionCode && (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-mono font-black text-blue-700 bg-white px-2.5 py-1 rounded-lg border border-emerald-200 shadow-2xs">
+                                                        {tx.transactionCode}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleCopyTxCode(tx.transactionCode)}
+                                                        className="p-1 rounded-md bg-white border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-blue-600 transition"
+                                                        title="Copy Transaction ID"
+                                                    >
+                                                        {copiedTxId === tx.transactionCode ? (
+                                                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                                        ) : (
+                                                            <Copy className="w-3.5 h-3.5" />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* 交接详情排期展示 */}
+                                        <div className="pt-3">
+                                            {tx?.meetupLocation || tx?.meetupTime ? (
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-white/80 p-3.5 rounded-xl border border-emerald-100 mb-3">
+                                                    <div className="flex items-start gap-2">
+                                                        <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                                                        <div>
+                                                            <span className="text-slate-400 block text-[11px] font-medium">
+                                                                Meetup Location
+                                                            </span>
+                                                            <span className="font-bold text-slate-800">
+                                                                {tx.meetupLocation || 'To be decided'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-start gap-2">
+                                                        <Calendar className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                                                        <div>
+                                                            <span className="text-slate-400 block text-[11px] font-medium">
+                                                                Scheduled Time
+                                                            </span>
+                                                            <span className="font-bold text-slate-800">
+                                                                {tx.meetupTime
+                                                                    ? new Date(tx.meetupTime).toLocaleString([], {
+                                                                          dateStyle: 'medium',
+                                                                          timeStyle: 'short',
+                                                                      })
+                                                                    : 'Time pending agreement'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {tx.meetupNotes && (
+                                                        <div className="sm:col-span-2 text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                                                            <strong>Note:</strong> {tx.meetupNotes}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 flex items-center justify-between gap-3 mb-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                                                        <span>
+                                                            Handover schedule pending. Please set the campus meetup time and location.
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <button
+                                                    onClick={() => openHandoverModal(order, tx)}
+                                                    className="px-3.5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+                                                >
+                                                    <Calendar className="w-3.5 h-3.5" />
+                                                    {tx?.meetupLocation ? 'Edit Handover Schedule' : 'Schedule Meetup (T13)'}
+                                                </button>
+                                                <Link
+                                                    to="/messages"
+                                                    className="px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition shadow-2xs flex items-center gap-1.5"
+                                                >
+                                                    <MessageSquare className="w-3.5 h-3.5 text-blue-600" />
+                                                    Chat with {activeTab === 'received' ? 'Buyer' : 'Seller'}
+                                                </Link>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
 
@@ -436,13 +587,6 @@ export default function MyOrders() {
                                             </button>
                                         </>
                                     )}
-
-                                    {/* 已接受状态提示 */}
-                                    {order.status === 'accepted' && (
-                                        <span className="text-xs text-emerald-700 font-bold bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
-                                            Deal Agreed! Handover ready (T13).
-                                        </span>
-                                    )}
                                 </div>
                             </div>
                         );
@@ -504,13 +648,40 @@ export default function MyOrders() {
                             <button
                                 type="submit"
                                 disabled={actionLoading}
-                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-xs transition shadow-xs"
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-xs transition shadow-xs cursor-pointer"
                             >
                                 Send Counter-Offer
                             </button>
                         </form>
                     </div>
                 </div>
+            )}
+
+            {/* T13: Meetup & Handover Scheduling Modal 弹窗 */}
+            {schedulingModalOpen && selectedOrderForModal && (
+                <MeetupSchedulingModal
+                    order={selectedOrderForModal}
+                    transaction={
+                        selectedTxForModal || {
+                            _id: selectedOrderForModal.transaction?._id,
+                            transactionCode: selectedOrderForModal.transaction?.transactionCode,
+                            handoverMethod: selectedOrderForModal.transactionMethod,
+                        }
+                    }
+                    currentUser={currentUser}
+                    onClose={() => {
+                        setSchedulingModalOpen(false);
+                        setSelectedOrderForModal(null);
+                        setSelectedTxForModal(null);
+                    }}
+                    onUpdated={(updatedTx) => {
+                        setTransactionsMap((prev) => ({
+                            ...prev,
+                            [selectedOrderForModal._id]: updatedTx,
+                        }));
+                        fetchOrders();
+                    }}
+                />
             )}
         </div>
     );

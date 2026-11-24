@@ -8,6 +8,11 @@ const transactionSchema = new mongoose.Schema(
       required: [true, 'Order is required'],
       unique: true, // One transaction per accepted order
     },
+    transactionCode: {
+      type: String,
+      unique: true,
+      index: true,
+    },
     listingId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Listing',
@@ -41,6 +46,10 @@ const transactionSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    meetupNotes: {
+      type: String,
+      default: '',
+    },
     sellerConfirmation: {
       type: String,
       enum: ['pending', 'handed_over'],
@@ -65,5 +74,14 @@ const transactionSchema = new mongoose.Schema(
     timestamps: true, // createdAt + updatedAt
   }
 );
+
+// Auto-generate unique human-readable transactionCode (e.g. TRX-K92B-4A12) before validation
+transactionSchema.pre('validate', function () {
+  if (!this.transactionCode) {
+    const randomHex = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const timestampPart = Date.now().toString(36).toUpperCase().slice(-4);
+    this.transactionCode = `TRX-${timestampPart}-${randomHex}`;
+  }
+});
 
 module.exports = mongoose.model('Transaction', transactionSchema);
