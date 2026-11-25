@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import MakeOfferModal from '../components/MakeOfferModal'
 import { FALLBACK_ITEMS } from './Browse'
+import { shuffleDiverse } from '../utils/shuffleDiverse'
 import {
   Search,
   MapPin,
@@ -211,6 +212,7 @@ export default function CategoryPage() {
       if (minPrice !== '') params.append('minPrice', minPrice)
       if (maxPrice !== '') params.append('maxPrice', maxPrice)
       if (sort) params.append('sort', sort)
+      params.append('limit', '1000')
 
       const url = `http://localhost:5000/api/listings?${params.toString()}`
       const res = await fetch(url)
@@ -271,31 +273,20 @@ export default function CategoryPage() {
         condition: it.condition === 'New' ? 'New' : 'Used',
       }))
 
-      if (sort === 'price-asc') filtered.sort((a, b) => a.price - b.price)
-      if (sort === 'price-desc') filtered.sort((a, b) => b.price - a.price)
-      if (sort === 'shuffle') {
-        for (let i = filtered.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [filtered[i], filtered[j]] = [filtered[j], filtered[i]]
-        }
-      }
+      let result = filtered
+      if (sort === 'price-asc') result.sort((a, b) => a.price - b.price)
+      if (sort === 'price-desc') result.sort((a, b) => b.price - a.price)
+      if (sort === 'shuffle') result = shuffleDiverse(result)
 
-      setListings(filtered)
+      setListings(result)
     } finally {
       setLoading(false)
     }
   }
 
-  // Shuffle currently displayed category listings
+  // Shuffle currently displayed category listings without grouping similar ads
   const handleShuffleListings = () => {
-    setListings((prev) => {
-      const arr = [...prev]
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]]
-      }
-      return arr
-    })
+    setListings((prev) => shuffleDiverse(prev))
   }
 
   // Trigger fetch whenever filters or active keyword change

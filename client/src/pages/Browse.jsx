@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import MakeOfferModal from '../components/MakeOfferModal'
 import RecommendationShelf from '../components/RecommendationShelf'
+import { shuffleDiverse } from '../utils/shuffleDiverse'
 import {
   Search,
   MapPin,
@@ -286,7 +287,7 @@ export default function Browse() {
   const [selectedCondition, setSelectedCondition] = useState('All')
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
-  const [sort, setSort] = useState('newest')
+  const [sort, setSort] = useState('shuffle')
   const [showFilters, setShowFilters] = useState(false)
 
   // Remote data state
@@ -308,6 +309,7 @@ export default function Browse() {
       if (minPrice !== '') params.append('minPrice', minPrice)
       if (maxPrice !== '') params.append('maxPrice', maxPrice)
       if (sort) params.append('sort', sort)
+      params.append('limit', '1000')
 
       const url = `http://localhost:5000/api/listings?${params.toString()}`
       const res = await fetch(url)
@@ -363,31 +365,20 @@ export default function Browse() {
       })
 
       // Sort client fallback
-      if (sort === 'price-asc') filtered.sort((a, b) => a.price - b.price)
-      if (sort === 'price-desc') filtered.sort((a, b) => b.price - a.price)
-      if (sort === 'shuffle') {
-        for (let i = filtered.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [filtered[i], filtered[j]] = [filtered[j], filtered[i]]
-        }
-      }
+      let result = filtered
+      if (sort === 'price-asc') result.sort((a, b) => a.price - b.price)
+      if (sort === 'price-desc') result.sort((a, b) => b.price - a.price)
+      if (sort === 'shuffle') result = shuffleDiverse(result)
 
-      setListings(filtered)
+      setListings(result)
     } finally {
       setLoading(false)
     }
   }
 
-  // Shuffle currently displayed listings
+  // Shuffle currently displayed listings without grouping similar ads together
   const handleShuffleListings = () => {
-    setListings((prev) => {
-      const arr = [...prev]
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]]
-      }
-      return arr
-    })
+    setListings((prev) => shuffleDiverse(prev))
   }
 
   // Trigger search on filter changes with debounce
@@ -469,7 +460,7 @@ export default function Browse() {
     setSelectedCondition('All')
     setMinPrice('')
     setMaxPrice('')
-    setSort('newest')
+    setSort('shuffle')
   }
 
   const hasActiveFilters =
@@ -478,7 +469,7 @@ export default function Browse() {
     selectedCondition !== 'All' ||
     minPrice !== '' ||
     maxPrice !== '' ||
-    sort !== 'newest'
+    sort !== 'shuffle'
 
   return (
     <div className="min-h-screen bg-slate-50 pb-16">
@@ -613,8 +604,8 @@ export default function Browse() {
                 onChange={(e) => setSort(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
+                <option value="shuffle">🔀 Shuffled (Mixed Categories)</option>
                 <option value="newest">Newest Listed First</option>
-                <option value="shuffle">🔀 Shuffled / Random</option>
                 <option value="price-asc">Price: Low to High</option>
                 <option value="price-desc">Price: High to Low</option>
                 <option value="oldest">Oldest Listed First</option>

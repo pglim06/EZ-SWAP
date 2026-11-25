@@ -3,6 +3,7 @@ const User = require('../models/User'); // 注册 User schema，确保 populate(
 const cloudinary = require('../config/cloudinary');
 const { getPriceInsightForListing } = require('../utils/priceInsight');
 const { SUBCATEGORY_DATA, DEMO_SELLERS, CATEGORY_IMAGES } = require('../scripts/seedCategories');
+const { shuffleDiverse } = require('../utils/shuffleDiverse');
 
 // Helper to normalize category names across frontend and database
 function normalizeCategory(cat) {
@@ -244,7 +245,7 @@ exports.getListings = async (req, res) => {
       sort,
       sellerId,
       page = 1,
-      limit = 50,
+      limit = 1000,
     } = req.query;
 
     const query = { status: 'active' };
@@ -307,7 +308,7 @@ exports.getListings = async (req, res) => {
 
     // 6. Pagination
     const pageNum = Math.max(1, parseInt(page, 10));
-    const limitNum = Math.max(1, Math.min(500, parseInt(limit || 200, 10)));
+    const limitNum = Math.max(1, Math.min(1000, parseInt(limit || 1000, 10)));
     const skip = (pageNum - 1) * limitNum;
 
     // Execute query
@@ -324,12 +325,9 @@ exports.getListings = async (req, res) => {
       return obj;
     });
 
-    // Shuffle if requested
+    // Shuffle without placing similar ads together
     if (sort === 'shuffle' || sort === 'random') {
-      for (let i = normalizedListings.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [normalizedListings[i], normalizedListings[j]] = [normalizedListings[j], normalizedListings[i]];
-      }
+      normalizedListings = shuffleDiverse(normalizedListings);
     }
 
     res.status(200).json({
@@ -421,10 +419,6 @@ exports.seedSampleListings = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message || 'Error seeding listings',
-    });
-  }
-};
       message: error.message || 'Error seeding listings',
     });
   }
