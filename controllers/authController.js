@@ -461,7 +461,7 @@ exports.updateProfile = async (req, res) => {
     if (profilePictureUrl !== undefined) fieldsToUpdate.profilePictureUrl = profilePictureUrl;
 
     const updatedUser = await User.findByIdAndUpdate(req.user._id, fieldsToUpdate, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     }).select('-passwordHash');
 

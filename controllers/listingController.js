@@ -112,6 +112,7 @@ exports.getListingById = async (req, res) => {
         }
 
         const listingObj = listing.toObject();
+        listingObj.condition = listingObj.condition === 'New' ? 'New' : 'Used';
         res.json({
             ...listingObj,
             success: true,

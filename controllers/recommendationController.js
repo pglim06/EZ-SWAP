@@ -224,7 +224,7 @@ exports.recordListingView = async (req, res) => {
     const listing = await Listing.findByIdAndUpdate(
       id,
       { $inc: { viewsCount: 1 } },
-      { new: true, select: 'viewsCount title' }
+      { returnDocument: 'after', select: 'viewsCount title' }
     );
 
     if (!listing) {
