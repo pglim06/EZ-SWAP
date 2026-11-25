@@ -15,7 +15,7 @@
 6. [Getting Started (Local Development)](#-getting-started-local-development)
 7. [Default Demo Credentials](#-default-demo-credentials)
 8. [Testing & Verification Suites](#-testing--verification-suites)
-9. [Deployment Guide (Vercel + Render + Atlas)](#-deployment-guide-vercel--render--atlas)
+9. [Deployment Guide (Render + Atlas)](#-deployment-guide-vercel--render--atlas)
 
 ---
 
