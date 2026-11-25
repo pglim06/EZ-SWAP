@@ -12,6 +12,7 @@ import CreateListing from './pages/CreateListing'
 import MyListings from './pages/MyListings'
 import EditListing from './pages/EditListing'
 import ListingDetail from './pages/ListingDetail'
+import CategoryPage from './pages/CategoryPage'
 import Profile from './pages/Profile'
 import MyOrders from './pages/MyOrders'
 import Messages from './pages/Messages'
@@ -114,6 +115,14 @@ export default function App() {
               />
 
               {/* Accessible by Guest to view listings */}
+              <Route
+                path="/category/:category"
+                element={
+                  <RequireAuthOrGuest>
+                    <CategoryPage />
+                  </RequireAuthOrGuest>
+                }
+              />
               <Route
                 path="/listings/:id"
                 element={

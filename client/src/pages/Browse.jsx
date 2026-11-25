@@ -388,7 +388,13 @@ export default function Browse() {
               return (
                 <button
                   key={cat.id}
-                  onClick={() => setSelectedCat(cat.id)}
+                  onClick={() => {
+                    if (cat.id === 'All') {
+                      setSelectedCat('All')
+                    } else {
+                      navigate(`/category/${encodeURIComponent(cat.id)}`)
+                    }
+                  }}
                   className="flex flex-col items-center group cursor-pointer text-center transition"
                 >
                   <div
