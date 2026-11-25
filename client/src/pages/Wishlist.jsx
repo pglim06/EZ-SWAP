@@ -76,7 +76,7 @@ export default function Wishlist() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
@@ -104,7 +104,7 @@ export default function Wishlist() {
       )}
 
       {bookmarks.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-3xl p-16 text-center shadow-xs">
+        <div className="bg-white border border-slate-200 rounded-3xl p-8 sm:p-16 text-center shadow-xs">
           <Heart className="w-12 h-12 text-slate-200 mx-auto mb-3" />
           <h3 className="text-base font-bold text-slate-800 mb-1">Your wishlist is empty</h3>
           <p className="text-xs text-slate-500 mb-6">

@@ -600,7 +600,7 @@ export default function CategoryPage() {
 
       {/* ─── TABS & SORT ROW (Mudah.my Tab Bar) ─────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-2 pb-4">
-        <div className="border-b border-slate-200 flex items-center justify-between">
+        <div className="border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-6">
             <button
               type="button"

@@ -365,7 +365,7 @@ export default function AdminDashboard() {
   // RENDER
   // ═══════════════════════════════════════════════════════════════════════════
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Toast notification */}
       {toast && (
         <div className="fixed top-20 right-6 z-50 bg-emerald-600 text-white text-sm font-semibold px-5 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-fade-in">

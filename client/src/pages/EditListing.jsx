@@ -132,8 +132,8 @@ export default function EditListing() {
     }
 
     return (
-        <div className="max-w-3xl mx-auto px-6 py-10">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-8">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-8">
                 <h1 className="text-2xl font-bold text-slate-900 mb-6">Edit Listing</h1>
 
                 {error && (

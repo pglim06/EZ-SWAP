@@ -47,7 +47,7 @@ export default function App() {
     <AuthProvider>
       <SocketProvider>
         <BrowserRouter>
-          <div className="min-h-screen bg-slate-50 text-slate-800">
+          <div className="min-h-screen bg-slate-50 text-slate-800 pb-16 md:pb-0">
             {/* Global Sticky Navbar with Auth State */}
             <Navbar />
 

@@ -287,10 +287,10 @@ export default function MyOrders() {
     }
 
     return (
-        <div className="max-w-5xl mx-auto px-6 py-10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
             {/* 页面头部 */}
-            <div className="mb-8">
-                <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <div className="mb-6 sm:mb-8">
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                     <Tag className="w-6 h-6 text-blue-600" />
                     Offers & Deals
                 </h1>
@@ -300,10 +300,10 @@ export default function MyOrders() {
             </div>
 
             {/* 买卖双方标签切换 */}
-            <div className="flex border-b border-slate-200 mb-6">
+            <div className="flex border-b border-slate-200 mb-6 overflow-x-auto scrollbar-none">
                 <button
                     onClick={() => setActiveTab('received')}
-                    className={`pb-3 px-4 text-sm font-bold border-b-2 transition flex items-center gap-2 cursor-pointer ${activeTab === 'received'
+                    className={`pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 transition flex items-center gap-2 cursor-pointer whitespace-nowrap ${activeTab === 'received'
                         ? 'border-blue-600 text-blue-600'
                         : 'border-transparent text-slate-500 hover:text-slate-700'
                         }`}
@@ -312,7 +312,7 @@ export default function MyOrders() {
                 </button>
                 <button
                     onClick={() => setActiveTab('sent')}
-                    className={`pb-3 px-4 text-sm font-bold border-b-2 transition flex items-center gap-2 cursor-pointer ${activeTab === 'sent'
+                    className={`pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 transition flex items-center gap-2 cursor-pointer whitespace-nowrap ${activeTab === 'sent'
                         ? 'border-blue-600 text-blue-600'
                         : 'border-transparent text-slate-500 hover:text-slate-700'
                         }`}

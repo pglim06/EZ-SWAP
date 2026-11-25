@@ -38,8 +38,8 @@ export default function VerifyEmail() {
   }, [token])
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-      <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl shadow-sm p-8 text-center">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-6">
+      <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl shadow-sm p-5 sm:p-8 text-center">
         {loading && (
           <div>
             <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />

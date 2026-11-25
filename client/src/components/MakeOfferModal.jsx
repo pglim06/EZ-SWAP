@@ -69,7 +69,7 @@ export default function MakeOfferModal({ isOpen, onClose, listing, currentUser, 
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-            <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-100">
+            <div className="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl relative border border-slate-100 max-h-[90dvh] overflow-y-auto">
                 {/* 关闭按钮 */}
                 <button
                     onClick={onClose}
@@ -154,7 +154,7 @@ export default function MakeOfferModal({ isOpen, onClose, listing, currentUser, 
                             </div>
 
                             {/* 快捷报价按钮 */}
-                            <div className="flex items-center gap-2 mt-2">
+                            <div className="flex flex-wrap items-center gap-2 mt-2">
                                 <button
                                     type="button"
                                     onClick={() => handleQuickPrice(1)}

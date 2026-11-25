@@ -195,9 +195,9 @@ export default function ListingDetail() {
         : ['https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop&q=60'];
 
     return (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
             {/* 返回按钮 */}
-            <div className="mb-6">
+            <div className="mb-4 sm:mb-6">
                 <Link
                     to="/"
                     className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition"
@@ -468,7 +468,7 @@ export default function ListingDetail() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                         {similarListings.map((item) => (
                             <Link
                                 key={item._id || item.id}

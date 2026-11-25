@@ -71,7 +71,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'UTM Library (PSZ)',
     sellerId: { name: 'Sarah Tan', averageRating: 5.0, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://images.unsplash.com/photo-1532012164546-f432f2e3edd4?w=500&auto=format&fit=crop&q=60' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600&auto=format&fit=crop&q=80' }],
   },
   {
     _id: 'sample-3',
@@ -165,7 +165,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'Kolej Rahman Putra (KRP)',
     sellerId: { name: 'Sarah Tan', averageRating: 5.0, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://images.unsplash.com/photo-1540518614846-7ede433c4ef3?w=500&auto=format&fit=crop&q=60' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1549388604-817d15aa0110?w=600&auto=format&fit=crop&q=80' }],
   },
   {
     _id: 'sample-12',
@@ -483,10 +483,10 @@ export default function Browse() {
   return (
     <div className="min-h-screen bg-slate-50 pb-16">
       {/* Search Header Banner */}
-      <section className="bg-white border-b border-slate-200 py-6 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <section className="bg-white border-b border-slate-200 py-5 px-4 sm:py-6 sm:px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
               UTM Campus Marketplace
             </h1>
             <p className="text-xs text-slate-500 mt-1">
@@ -495,21 +495,21 @@ export default function Browse() {
           </div>
 
           {/* Search bar & filter toggle */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
+          <div className="flex items-center gap-2 w-full md:w-auto">
             {/* HCI Enhanced Search Container */}
-            <div className="relative flex items-center bg-white border-2 border-slate-200 hover:border-blue-400 focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-100 rounded-2xl shadow-xs transition-all duration-200 w-full md:w-[420px] lg:w-[460px] pl-3.5 pr-1.5 py-1.5">
+            <div className="relative flex items-center bg-white border-2 border-slate-200 hover:border-blue-400 focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-100 rounded-2xl shadow-xs transition-all duration-200 flex-1 min-w-0 md:w-[420px] lg:w-[460px] pl-3 sm:pl-3.5 pr-1.5 py-1.5">
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by keywords (e.g. Mathematics, Mouse)..."
-                className="w-full bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none pr-2 font-medium"
+                placeholder="Search (e.g. Calculus, Mouse)..."
+                className="w-full min-w-0 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none pr-2 font-medium"
               />
               {search && (
                 <button
                   type="button"
                   onClick={() => setSearch('')}
-                  className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition mr-1 cursor-pointer"
+                  className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition mr-1 cursor-pointer shrink-0"
                   title="Clear search"
                 >
                   <X className="w-4 h-4" />
@@ -528,11 +528,12 @@ export default function Browse() {
 
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`h-[46px] px-3.5 border-2 rounded-2xl flex items-center gap-2 text-xs font-bold transition-all duration-200 cursor-pointer shrink-0 ${
+              className={`h-[46px] px-3 sm:px-3.5 border-2 rounded-2xl flex items-center justify-center gap-2 text-xs font-bold transition-all duration-200 cursor-pointer shrink-0 ${
                 showFilters || hasActiveFilters
                   ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
                   : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
               }`}
+              aria-label="Toggle filters"
             >
               <SlidersHorizontal className="w-4 h-4" />
               <span className="hidden sm:inline">Filters</span>
@@ -544,8 +545,8 @@ export default function Browse() {
         </div>
 
         {/* Quick Popular Search Tags (HCI Principle: Recognition over Recall) */}
-        <div className="max-w-7xl mx-auto flex items-center gap-2 flex-wrap pt-3 text-xs text-slate-500">
-          <span className="font-bold text-slate-400 flex items-center gap-1 text-[11px] uppercase tracking-wider">
+        <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto scrollbar-none sm:flex-wrap pt-3 pb-1 text-xs text-slate-500">
+          <span className="font-bold text-slate-400 flex items-center gap-1 text-[11px] uppercase tracking-wider shrink-0">
             <Sparkles className="w-3.5 h-3.5 text-blue-600" /> Popular:
           </span>
           {['Calculus', 'Logitech Mouse', 'Study Lamp', 'UTM Polo', 'Bicycle', 'Monitor'].map((tag) => (
@@ -553,7 +554,7 @@ export default function Browse() {
               key={tag}
               type="button"
               onClick={() => setSearch(tag)}
-              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-600 text-xs font-medium transition cursor-pointer"
+              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-600 text-xs font-medium transition cursor-pointer whitespace-nowrap shrink-0"
             >
               {tag}
             </button>
@@ -635,9 +636,9 @@ export default function Browse() {
       </section>
 
       {/* Categories Grid (Mudah.my-style) */}
-      <section className="max-w-7xl mx-auto px-6 py-6">
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center justify-between">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs">
+          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 sm:mb-4 flex flex-wrap items-center justify-between gap-2">
             <span className="flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-blue-600" /> Explore By Categories
             </span>
@@ -653,7 +654,7 @@ export default function Browse() {
             </button>
           </div>
 
-          <div className="grid grid-cols-4 sm:grid-cols-7 gap-4">
+          <div className="grid grid-cols-4 sm:grid-cols-7 gap-2.5 sm:gap-4">
             {CATEGORIES.map((cat) => {
               const IconComp = cat.icon
               const isSelected = selectedCat === cat.id
@@ -671,16 +672,16 @@ export default function Browse() {
                   className="flex flex-col items-center group cursor-pointer text-center transition"
                 >
                   <div
-                    className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center transition-all duration-200 border ${
+                    className={`w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center transition-all duration-200 border ${
                       isSelected
                         ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-105'
                         : `${cat.bg} ${cat.color} border-slate-100 group-hover:scale-105 group-hover:shadow-sm`
                     }`}
                   >
-                    <IconComp className="w-6 h-6 sm:w-7 sm:h-7" />
+                    <IconComp className="w-5 h-5 sm:w-7 sm:h-7" />
                   </div>
                   <span
-                    className={`text-xs mt-2 font-medium line-clamp-1 transition ${
+                    className={`text-[11px] sm:text-xs mt-1.5 sm:mt-2 font-medium line-clamp-1 transition ${
                       isSelected ? 'text-blue-600 font-bold' : 'text-slate-700 group-hover:text-blue-600'
                     }`}
                   >
@@ -694,7 +695,7 @@ export default function Browse() {
       </section>
 
       {/* Ads Listing Grid */}
-      <section className="max-w-7xl mx-auto px-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* AI Recommendation Shelf hidden to prevent obstructing filter controls and instant results */}
         {/* {selectedCat === 'All' && !search && (
           <RecommendationShelf
@@ -752,7 +753,7 @@ export default function Browse() {
 
         {/* Product Cards */}
         {!loading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {listings.map((item) => {
               const image =
                 item.images && item.images.length > 0

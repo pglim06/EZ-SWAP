@@ -5,30 +5,30 @@ export default function Home() {
     return (
         <div className="min-h-[calc(100vh-4rem)] bg-slate-50 flex flex-col justify-between">
             {/* Hero 区域 */}
-            <section className="max-w-5xl mx-auto px-6 pt-16 pb-12 text-center">
-                <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full mb-6">
+            <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-10 sm:pt-16 pb-8 sm:pb-12 text-center">
+                <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full mb-5 sm:mb-6">
                     <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
                     Exclusively for UTM Students & Staff
                 </div>
 
-                <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight mb-6 leading-tight">
+                <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-slate-900 tracking-tight mb-4 sm:mb-6 leading-tight">
                     The Smarter Way to <span className="text-blue-600">Swap & Trade</span> on Campus
                 </h1>
 
-                <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-10">
+                <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-8 sm:mb-10">
                     Turn your unused textbooks, dorm equipment, and electronics into cash, or discover deals right within your college residential hall.
                 </p>
 
-                <div className="flex flex-wrap items-center justify-center gap-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4">
                     <Link
                         to="/browse"
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition text-base"
+                        className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition text-base"
                     >
                         Explore Marketplace <ArrowRight className="w-4 h-4" />
                     </Link>
                     <Link
                         to="/login"
-                        className="bg-white border border-slate-300 hover:border-slate-400 text-slate-700 font-semibold px-6 py-3 rounded-xl shadow-xs transition text-base"
+                        className="bg-white border border-slate-300 hover:border-slate-400 text-slate-700 font-semibold px-6 py-3 rounded-xl shadow-xs transition text-base text-center"
                     >
                         Student Sign In
                     </Link>
@@ -36,7 +36,7 @@ export default function Home() {
             </section>
 
             {/* 3 大核心优势卡片 */}
-            <section className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                 <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
                     <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-4">
                         <ShieldCheck className="w-6 h-6" />

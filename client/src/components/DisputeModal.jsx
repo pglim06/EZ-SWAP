@@ -78,7 +78,7 @@ export default function DisputeModal({ transaction, currentUser, onClose, onSucc
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
-            <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative border border-slate-100 my-8">
+            <div className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-7 shadow-2xl relative border border-slate-100 my-4 sm:my-8 max-h-[90dvh] overflow-y-auto">
                 {/* Close Button */}
                 <button
                     onClick={onClose}

@@ -152,8 +152,8 @@ export default function CreateListing() {
     };
 
     return (
-        <div className="max-w-3xl mx-auto px-6 py-10">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-8">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-8">
                 <h1 className="text-2xl font-bold text-slate-900 mb-1">Post a Free Ad</h1>
                 <p className="text-sm text-slate-500 mb-6">
                     List your item for fellow UTM students to buy or swap.
@@ -245,7 +245,7 @@ export default function CreateListing() {
 
                     {/* 商品描述 */}
                     <div>
-                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
                             <label className="block text-sm font-semibold text-slate-700">
                                 Description <span className="text-red-500">*</span>
                             </label>

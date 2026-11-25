@@ -531,8 +531,7 @@ export default function Messages() {
   return (
     <div className="max-w-6xl mx-auto px-0 sm:px-4 py-0 sm:py-6">
       <div
-        className="bg-white border border-slate-200 rounded-none sm:rounded-2xl shadow-xs overflow-hidden flex"
-        style={{ height: 'calc(100vh - 5rem)' }}
+        className="bg-white border-y sm:border border-slate-200 rounded-none sm:rounded-2xl shadow-xs overflow-hidden flex h-[calc(100dvh-7.5rem)] md:h-[calc(100vh-5.5rem)]"
       >
         {/* ─── Sidebar: conversation list ──────────────────────────── */}
         <div
@@ -657,11 +656,12 @@ export default function Messages() {
           {activeConvId && activeConv ? (
             <>
               {/* Chat header */}
-              <div className="px-5 py-3 border-b border-slate-200 bg-white flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
+              <div className="px-3 sm:px-5 py-3 border-b border-slate-200 bg-white flex items-center justify-between gap-2 sm:gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                   <button
                     onClick={() => setShowSidebar(true)}
-                    className="md:hidden text-slate-500 hover:text-blue-600 p-1"
+                    aria-label="Back to conversations"
+                    className="md:hidden text-slate-500 hover:text-blue-600 p-2 -ml-1 rounded-lg hover:bg-slate-100 cursor-pointer"
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </button>
@@ -923,7 +923,7 @@ export default function Messages() {
 
                     {/* Inline Counter Offer Input */}
                     {showCounterInput && (
-                      <div className="w-full pt-2 flex items-center gap-2 border-t border-amber-200/60 mt-1">
+                      <div className="w-full pt-2 flex flex-wrap items-center gap-2 border-t border-amber-200/60 mt-1">
                         <span className="text-xs font-semibold text-amber-900">
                           Counter Price (RM):
                         </span>
