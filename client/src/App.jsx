@@ -16,6 +16,7 @@ import CategoryPage from './pages/CategoryPage'
 import Profile from './pages/Profile'
 import MyOrders from './pages/MyOrders'
 import Messages from './pages/Messages'
+import Wishlist from './pages/Wishlist'
 import AdminDashboard from './pages/AdminDashboard'
 
 // Guard that ensures user has either logged in or chosen "Continue as Guest"
@@ -114,6 +115,14 @@ export default function App() {
                 element={
                   <RequireRegisteredUser>
                     <Messages />
+                  </RequireRegisteredUser>
+                }
+              />
+              <Route
+                path="/wishlist"
+                element={
+                  <RequireRegisteredUser>
+                    <Wishlist />
                   </RequireRegisteredUser>
                 }
               />

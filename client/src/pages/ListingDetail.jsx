@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import MakeOfferModal from '../components/MakeOfferModal';
 import ServiceComments from '../components/ServiceComments';
+import PriceInsightCard from '../components/PriceInsightCard';
 import { FALLBACK_ITEMS } from './Browse';
 import { recordView, fetchSimilarListings } from '../utils/viewHistory';
 import {
@@ -375,6 +376,11 @@ export default function ListingDetail() {
                             )}
                         </div>
                     </div>
+
+                    {/* 价格区间洞察卡片 */}
+                    {listing.priceInsight && (
+                        <PriceInsightCard priceInsight={listing.priceInsight} />
+                    )}
 
                     {/* 卖家信誉卡片 */}
                     <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">

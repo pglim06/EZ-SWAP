@@ -1,6 +1,7 @@
 const Listing = require('../models/Listing');
 const User = require('../models/User'); // 注册 User schema，确保 populate('sellerId') 能正常工作
 const cloudinary = require('../config/cloudinary');
+const { getPriceInsightForListing } = require('../utils/priceInsight');
 
 // Helper to normalize category names across frontend and database
 function normalizeCategory(cat) {
@@ -113,10 +114,33 @@ exports.getListingById = async (req, res) => {
 
         const listingObj = listing.toObject();
         listingObj.condition = listingObj.condition === 'New' ? 'New' : 'Used';
+        const priceInsight = await getPriceInsightForListing(listingObj);
+        listingObj.priceInsight = priceInsight;
+
         res.json({
             ...listingObj,
             success: true,
             listing: listingObj,
+            priceInsight,
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Get price insight quartile statistics for a listing
+// @route   GET /api/listings/:id/price-insight
+exports.getListingPriceInsight = async (req, res) => {
+    try {
+        const listing = await Listing.findById(req.params.id).lean();
+        if (!listing || listing.status === 'removed') {
+            return res.status(404).json({ success: false, message: 'Listing not found' });
+        }
+
+        const priceInsight = await getPriceInsightForListing(listing);
+        res.json({
+            success: true,
+            priceInsight,
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

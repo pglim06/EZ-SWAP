@@ -4,6 +4,7 @@ const upload = require('../middleware/upload');
 const {
   getListings,
   getListingById,
+  getListingPriceInsight,
   createListing,
   updateListing,
   deleteListing,
@@ -24,7 +25,8 @@ router.get('/recommendations', getRecommendations);
 router.get('/:id/similar', getSimilarListings);
 router.post('/:id/view', recordListingView);
 
-// Single listing details
+// Single listing details & price insight
+router.get('/:id/price-insight', getListingPriceInsight);
 router.get('/:id', getListingById);
 
 // Create, update, delete routes (with upload middleware)

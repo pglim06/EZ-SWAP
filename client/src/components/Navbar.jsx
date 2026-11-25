@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { PlusCircle, User, ShoppingBag, LogOut, ShieldCheck, MessageCircle, X } from 'lucide-react'
+import { PlusCircle, User, ShoppingBag, LogOut, ShieldCheck, MessageCircle, X, Heart } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useSocket } from '../context/SocketContext'
 
@@ -51,6 +51,12 @@ export default function Navbar() {
               My Listings
             </Link>
             {user && (
+              <Link to="/wishlist" className="hover:text-rose-600 transition flex items-center gap-1.5">
+                <Heart className="w-4 h-4 text-rose-500" />
+                Wishlist
+              </Link>
+            )}
+            {user && (
               <Link to="/messages" className="hover:text-blue-600 transition relative flex items-center gap-1.5">
                 <MessageCircle className="w-4 h-4" />
                 Messages
@@ -68,19 +74,28 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           {user ? (
             <div className="flex items-center gap-2">
-              {/* Only show student-specific messaging on mobile for non-admin */}
+              {/* Mobile wishlist & messages icons */}
               {user.role !== 'admin' && (
-                <Link
-                  to="/messages"
-                  className="md:hidden relative flex items-center justify-center p-2 text-slate-500 hover:text-blue-600 transition"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>
-                  )}
-                </Link>
+                <>
+                  <Link
+                    to="/wishlist"
+                    className="md:hidden relative flex items-center justify-center p-2 text-slate-500 hover:text-rose-500 transition"
+                    title="My Wishlist"
+                  >
+                    <Heart className="w-5 h-5" />
+                  </Link>
+                  <Link
+                    to="/messages"
+                    className="md:hidden relative flex items-center justify-center p-2 text-slate-500 hover:text-blue-600 transition"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                </>
               )}
 
               {user.role === 'admin' ? (
