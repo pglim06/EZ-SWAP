@@ -6,7 +6,17 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI);
+    let uri = (process.env.MONGODB_URI || process.env.MONGO_URI || '').trim();
+    // Strip accidental surrounding quotes or "MONGODB_URI=" prefix pasted into hosting dashboards
+    uri = uri.replace(/^['"]|['"]$/g, '').replace(/^MONGODB_URI=/i, '').trim();
+
+    if (!uri.startsWith('mongodb://') && !uri.startsWith('mongodb+srv://')) {
+      throw new Error(
+        `Invalid MONGODB_URI (length=${uri.length}, prefix="${uri.slice(0, 14)}"). Set MONGODB_URI in Render Environment to your mongodb+srv://... connection string.`
+      );
+    }
+
+    const conn = await mongoose.connect(uri);
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`MongoDB Connection Error: ${error.message}`);
