@@ -79,6 +79,20 @@ exports.createListing = async (req, res) => {
                 : [];
         }
 
+        let parsedCoordinates = { lat: null, lng: null };
+        if (req.body.coordinates) {
+            try {
+                const rawCoords = typeof req.body.coordinates === 'string'
+                    ? JSON.parse(req.body.coordinates)
+                    : req.body.coordinates;
+                if (rawCoords && Number.isFinite(Number(rawCoords.lat)) && Number.isFinite(Number(rawCoords.lng))) {
+                    parsedCoordinates = { lat: Number(rawCoords.lat), lng: Number(rawCoords.lng) };
+                }
+            } catch {
+                // Ignore malformed coordinates
+            }
+        }
+
         const listing = await Listing.create({
             sellerId,
             title: title ? title.trim() : '',
@@ -86,6 +100,8 @@ exports.createListing = async (req, res) => {
             price: Number(price),
             category: normalizeCategory(category) || category,
             condition,
+            location: req.body.location ? String(req.body.location).trim() : '',
+            coordinates: parsedCoordinates,
             images,
             tags: parsedTags,
             status: 'active',
@@ -229,12 +245,27 @@ exports.updateListing = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to update this listing' });
         }
 
-        const allowedFields = ['title', 'description', 'price', 'category', 'condition', 'status'];
+        const allowedFields = ['title', 'description', 'price', 'category', 'condition', 'status', 'location'];
         allowedFields.forEach((field) => {
             if (req.body[field] !== undefined) {
                 listing[field] = field === 'category' ? (normalizeCategory(req.body[field]) || req.body[field]) : req.body[field];
             }
         });
+
+        if (req.body.coordinates !== undefined) {
+            try {
+                const rawCoords = typeof req.body.coordinates === 'string'
+                    ? JSON.parse(req.body.coordinates)
+                    : req.body.coordinates;
+                if (rawCoords && Number.isFinite(Number(rawCoords.lat)) && Number.isFinite(Number(rawCoords.lng))) {
+                    listing.coordinates = { lat: Number(rawCoords.lat), lng: Number(rawCoords.lng) };
+                } else {
+                    listing.coordinates = { lat: null, lng: null };
+                }
+            } catch {
+                // Ignore malformed coordinates
+            }
+        }
 
         // 1. 根据前端传来的 keepImageIds 过滤掉被用户删除的旧图片
         if (req.body.keepImageIds !== undefined) {

@@ -42,6 +42,10 @@ const transactionSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    meetupCoordinates: {
+      lat: { type: Number, default: null },
+      lng: { type: Number, default: null },
+    },
     meetupTime: {
       type: Date,
       default: null,

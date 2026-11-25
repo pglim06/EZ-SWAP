@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Upload, X, Loader2, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { Upload, X, Loader2, CheckCircle2, AlertCircle, Sparkles, MapPin } from 'lucide-react';
+import LocationMapPicker from '../components/LocationMapPicker';
 
 const CATEGORIES = ['Textbooks', 'Electronics', 'Dorm', 'Services', 'Clothing', 'Other'];
 const CONDITIONS = ['New', 'Used'];
@@ -22,6 +23,8 @@ export default function CreateListing() {
         category: 'Textbooks',
         condition: 'Used',
         description: '',
+        location: '',
+        coordinates: null,
     });
     const [files, setFiles] = useState([]);
     const [previews, setPreviews] = useState([]);
@@ -114,6 +117,12 @@ export default function CreateListing() {
             data.append('category', formData.category);
             data.append('condition', formData.condition);
             data.append('description', formData.description);
+            if (formData.location) {
+                data.append('location', formData.location);
+            }
+            if (formData.coordinates) {
+                data.append('coordinates', JSON.stringify(formData.coordinates));
+            }
 
             if (currentUser?._id) {
                 data.append('sellerId', currentUser._id);
@@ -303,6 +312,22 @@ export default function CreateListing() {
                                 ))}
                             </div>
                         )}
+                    </div>
+
+                    {/* 校园面交地点地图选择 */}
+                    <div>
+                        <label className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2">
+                            <MapPin className="w-4 h-4 text-blue-600" />
+                            Campus Meetup / Pickup Location
+                        </label>
+                        <LocationMapPicker
+                            location={formData.location}
+                            coordinates={formData.coordinates}
+                            onChange={({ location, coordinates }) =>
+                                setFormData((prev) => ({ ...prev, location, coordinates }))
+                            }
+                            heightClass="h-56"
+                        />
                     </div>
 
                     {/* 提交按钮 */}

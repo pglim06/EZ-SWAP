@@ -13,6 +13,8 @@ import {
     Copy,
     Check
 } from 'lucide-react';
+import LocationMapPicker from './LocationMapPicker';
+import { resolveLocationCoords } from '../utils/utmLocations';
 
 const UTM_CAMPUS_PRESETS = [
     { label: 'UTM Library (PSZ - Level 1 Entrance)', location: 'UTM Perpustakaan Sultanah Zanariah (PSZ)' },
@@ -36,7 +38,13 @@ export default function MeetupSchedulingModal({ transaction, order, currentUser,
         return found ? found.location : (transaction?.meetupLocation ? 'CUSTOM' : UTM_CAMPUS_PRESETS[0].location);
     });
     const [customLocation, setCustomLocation] = useState(
-        transaction?.meetupLocation || ''
+        transaction?.meetupLocation || UTM_CAMPUS_PRESETS[0].location
+    );
+    const [meetupCoordinates, setMeetupCoordinates] = useState(() =>
+        resolveLocationCoords(
+            transaction?.meetupLocation || UTM_CAMPUS_PRESETS[0].location,
+            transaction?.meetupCoordinates
+        )
     );
 
     // Format initial date for datetime-local
@@ -73,7 +81,7 @@ export default function MeetupSchedulingModal({ transaction, order, currentUser,
         e.preventDefault();
         setError('');
 
-        const finalLocation = selectedPreset === 'CUSTOM' ? customLocation.trim() : (selectedPreset || customLocation.trim());
+        const finalLocation = customLocation.trim();
 
         if (handoverMethod === 'meetup' && !finalLocation) {
             setError('Please specify a campus meetup location.');
@@ -93,6 +101,7 @@ export default function MeetupSchedulingModal({ transaction, order, currentUser,
                 body: JSON.stringify({
                     userId: currentUser?._id,
                     meetupLocation: finalLocation,
+                    meetupCoordinates,
                     meetupTime: meetupTime ? new Date(meetupTime).toISOString() : null,
                     handoverMethod,
                     meetupNotes: meetupNotes.trim(),
@@ -216,41 +225,22 @@ export default function MeetupSchedulingModal({ transaction, order, currentUser,
                         </div>
                     </div>
 
-                    {/* Location Preset Selector */}
+                    {/* Location Map Picker */}
                     <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1">
+                        <label className="text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1">
                             <MapPin className="w-3.5 h-3.5 text-blue-600" />
-                            {handoverMethod === 'meetup' ? 'UTM Meetup Location' : 'Delivery Drop-off Point'}
+                            {handoverMethod === 'meetup' ? 'UTM Meetup Location (Pin on Map)' : 'Delivery Drop-off Point (Pin on Map)'}
                         </label>
-                        <select
-                            value={selectedPreset}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                setSelectedPreset(val);
-                                if (val !== 'CUSTOM') {
-                                    setCustomLocation(val);
-                                }
+                        <LocationMapPicker
+                            location={customLocation}
+                            coordinates={meetupCoordinates}
+                            onChange={({ location, coordinates }) => {
+                                setCustomLocation(location);
+                                setMeetupCoordinates(coordinates);
+                                setSelectedPreset(location);
                             }}
-                            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer mb-2"
-                        >
-                            {UTM_CAMPUS_PRESETS.map((p, idx) => (
-                                <option key={idx} value={p.location || 'CUSTOM'}>
-                                    {p.label}
-                                </option>
-                            ))}
-                        </select>
-
-                        {/* Custom location input */}
-                        {(selectedPreset === 'CUSTOM' || !selectedPreset) && (
-                            <input
-                                type="text"
-                                required
-                                value={customLocation}
-                                onChange={(e) => setCustomLocation(e.target.value)}
-                                placeholder="e.g. Kolej Tun Hussein Onn (KTHO) Main Gate"
-                                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        )}
+                            heightClass="h-44"
+                        />
                     </div>
 
                     {/* Meetup Date and Time */}

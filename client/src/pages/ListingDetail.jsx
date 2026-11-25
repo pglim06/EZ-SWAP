@@ -5,6 +5,7 @@ import MakeOfferModal from '../components/MakeOfferModal';
 import ServiceComments from '../components/ServiceComments';
 import PriceInsightCard from '../components/PriceInsightCard';
 import AiPhotoAnalysisCard from '../components/AiPhotoAnalysisCard';
+import LocationMapPicker from '../components/LocationMapPicker';
 import { FALLBACK_ITEMS } from './Browse';
 import { recordView, fetchSimilarListings } from '../utils/viewHistory';
 import {
@@ -24,6 +25,7 @@ import {
     Sparkles,
     Eye,
     Heart,
+    MapPin,
 } from 'lucide-react';
 
 export default function ListingDetail() {
@@ -251,6 +253,19 @@ export default function ListingDetail() {
                         condition={listing.condition}
                         price={listing.price}
                     />
+
+                    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+                        <h2 className="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-blue-600" />
+                            Campus Pickup / Meetup Location
+                        </h2>
+                        <LocationMapPicker
+                            readOnly
+                            location={listing.location || 'UTM Skudai Campus'}
+                            coordinates={listing.coordinates}
+                            heightClass="h-48"
+                        />
+                    </div>
 
                     <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-5 flex items-start gap-3.5 text-blue-900">
                         <ShieldCheck className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />

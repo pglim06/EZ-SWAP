@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Upload, X, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Upload, X, Loader2, AlertCircle, CheckCircle2, MapPin } from 'lucide-react';
+import LocationMapPicker from '../components/LocationMapPicker';
 
 const CATEGORIES = ['Textbooks', 'Electronics', 'Dorm', 'Services', 'Clothing', 'Other'];
 const CONDITIONS = ['New', 'Used'];
@@ -17,6 +18,8 @@ export default function EditListing() {
         condition: 'Used',
         status: 'active',
         description: '',
+        location: '',
+        coordinates: null,
     });
     const [existingImages, setExistingImages] = useState([]);
     const [newFiles, setNewFiles] = useState([]);
@@ -42,6 +45,8 @@ export default function EditListing() {
                     condition: item.condition === 'New' ? 'New' : 'Used',
                     status: item.status || 'active',
                     description: item.description || '',
+                    location: item.location || '',
+                    coordinates: item.coordinates || null,
                 });
                 setExistingImages(item.images || []);
             } catch (err) {
@@ -91,6 +96,10 @@ export default function EditListing() {
             data.append('condition', formData.condition);
             data.append('status', formData.status);
             data.append('description', formData.description);
+            data.append('location', formData.location || '');
+            if (formData.coordinates) {
+                data.append('coordinates', JSON.stringify(formData.coordinates));
+            }
             data.append('keepImageIds', JSON.stringify(existingImages.map((img) => img._id)));
 
             newFiles.forEach((file) => {
@@ -222,6 +231,21 @@ export default function EditListing() {
                             value={formData.description}
                             onChange={handleChange}
                             className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2">
+                            <MapPin className="w-4 h-4 text-blue-600" />
+                            Campus Meetup / Pickup Location
+                        </label>
+                        <LocationMapPicker
+                            location={formData.location}
+                            coordinates={formData.coordinates}
+                            onChange={({ location, coordinates }) =>
+                                setFormData((prev) => ({ ...prev, location, coordinates }))
+                            }
+                            heightClass="h-56"
                         />
                     </div>
 

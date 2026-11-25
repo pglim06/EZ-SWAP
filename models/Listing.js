@@ -68,6 +68,15 @@ const listingSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    location: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    coordinates: {
+      lat: { type: Number, default: null },
+      lng: { type: Number, default: null },
+    },
     status: {
       type: String,
       enum: ['active', 'reserved', 'sold', 'removed'],

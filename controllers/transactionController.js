@@ -105,7 +105,7 @@ exports.getTransactionByOrderId = async (req, res) => {
 exports.updateHandoverDetails = async (req, res) => {
     try {
         const { id } = req.params;
-        const { meetupLocation, meetupTime, handoverMethod, meetupNotes } = req.body;
+        const { meetupLocation, meetupCoordinates, meetupTime, handoverMethod, meetupNotes } = req.body;
         const userId = req.user ? req.user._id : req.body.userId;
 
         const transaction = await Transaction.findById(id);
@@ -128,6 +128,12 @@ exports.updateHandoverDetails = async (req, res) => {
         // 更新交接字段
         if (meetupLocation !== undefined) {
             transaction.meetupLocation = meetupLocation;
+        }
+        if (meetupCoordinates && Number.isFinite(Number(meetupCoordinates.lat)) && Number.isFinite(Number(meetupCoordinates.lng))) {
+            transaction.meetupCoordinates = {
+                lat: Number(meetupCoordinates.lat),
+                lng: Number(meetupCoordinates.lng),
+            };
         }
         if (meetupTime !== undefined) {
             transaction.meetupTime = meetupTime ? new Date(meetupTime) : null;
