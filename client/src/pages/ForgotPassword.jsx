@@ -31,7 +31,7 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-slate-50 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
       <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl shadow-sm p-8">
         <Link
           to="/login"

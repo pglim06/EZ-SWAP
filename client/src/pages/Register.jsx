@@ -75,7 +75,7 @@ export default function Register() {
   // Registration Success Screen — Tells user to check their real Gmail
   if (registrationResult) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] bg-slate-50 flex items-center justify-center p-6 py-12">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 py-12">
         <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl shadow-sm p-8 text-center">
           <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <Mail className="w-8 h-8" />
@@ -145,7 +145,7 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-slate-50 flex items-center justify-center p-6 py-12">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 py-12">
       <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl shadow-sm p-8">
         <Link
           to="/login"

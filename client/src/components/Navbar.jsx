@@ -10,8 +10,9 @@ export default function Navbar() {
   const { unreadCount } = useSocket()
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
 
-  // Do not show navbar on the login page
-  if (location.pathname === '/login' || location.pathname.startsWith('/login/')) {
+  // Do not show navbar on auth pages (login, register, forgot-password, reset-password, verify-email)
+  const authRoutes = ['/login', '/register', '/forgot-password', '/reset-password', '/verify-email']
+  if (authRoutes.some((route) => location.pathname === route || location.pathname.startsWith(route + '/'))) {
     return null
   }
 
