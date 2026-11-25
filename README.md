@@ -1,6 +1,6 @@
 # 🎓 EZ Swap — Campus Marketplace Platform
 
-> **AIROST 2026 Innovation Challenge**  
+> **AIROST 2026 Internship**  
 > **Team EZ**: Lim Pin Guan & Wong Ann Rick  
 > Web & App-based secure campus peer-to-peer marketplace tailored specifically for Universiti Teknologi Malaysia (UTM) students.
 
@@ -44,17 +44,17 @@ EZ Swap implements a structured 9-step trade pipeline:
          ➔ [9. Admin Dispute Resolution (If Needed)]
 ```
 
-- **T07: Authentication & Tiered Validation**: UTM students get automatic verified status; external emails require approval.
-- **T08: Listing CRUD & Cloudinary**: Multi-image uploads, categorized ads, real-time status management (`active`, `reserved`, `sold`, `removed`).
-- **T09: Discovery & Search**: Keyword fuzzy search, category filtering (*Textbooks, Electronics, Dorm, Fashion, Services, Sports*), and price sorting.
-- **T10: Detail View & Wishlist**: Image carousel, view counter, seller badge, and persistent bookmarks.
-- **T11: Real-Time Messaging**: Socket.IO-powered conversations linked to listing items with unread badges.
-- **T12: Offer Negotiation Workflow**: Make offer with custom price and handover method (Meetup/Delivery); accept, reject, or counter-offer.
-- **T13: Handover Coordination**: Automatically generates unique Transaction ID upon acceptance; meetup scheduling modal with location & time.
-- **T14: Dual Handover Confirmation**: 2-party confirmation system to prevent theft and ghosting.
-- **T15: Mutual Reviews**: 1–5 star rating modal with comments, updating seller/buyer public reputation score.
-- **T16: Admin Moderation Portal**: Dedicated dashboard for user verification, listing moderation, report resolution, and dispute resolution.
-- **T17: AI Recommendation Engine**: Multi-factor candidate scoring based on student viewing history, category affinity, and tag similarity.
+- **1: Authentication & Tiered Validation**: UTM students get automatic verified status; external emails require approval.
+- **2 Listing CRUD & Cloudinary**: Multi-image uploads, categorized ads, real-time status management (`active`, `reserved`, `sold`, `removed`).
+- **3: Discovery & Search**: Keyword fuzzy search, category filtering (*Textbooks, Electronics, Dorm, Fashion, Services, Sports*), and price sorting.
+- **4: Detail View & Wishlist**: Image carousel, view counter, seller badge, and persistent bookmarks.
+- **5: Real-Time Messaging**: Socket.IO-powered conversations linked to listing items with unread badges.
+- **6: Offer Negotiation Workflow**: Make offer with custom price and handover method (Meetup/Delivery); accept, reject, or counter-offer.
+- **7: Handover Coordination**: Automatically generates unique Transaction ID upon acceptance; meetup scheduling modal with location & time.
+- **8: Dual Handover Confirmation**: 2-party confirmation system to prevent theft and ghosting.
+- **9: Mutual Reviews**: 1–5 star rating modal with comments, updating seller/buyer public reputation score.
+- **10: Admin Moderation Portal**: Dedicated dashboard for user verification, listing moderation, report resolution, and dispute resolution.
+- **11: AI Recommendation Engine**: Multi-factor candidate scoring based on student viewing history, category affinity, and tag similarity.
 
 ---
 
