@@ -247,5 +247,5 @@ npm run test:recommendation
    - **Build Command**: `npm install`
    - **Start Command**: `node server.js`
 5. Add Environment Variables from `.env` (`MONGODB_URI`, `JWT_SECRET`, `CLOUDINARY_*`).
-6. Deploy and note your production URL (e.g., `https://ez-swap-api.onrender.com`).
+6. Deploy and note your production URL.
 
