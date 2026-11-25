@@ -121,8 +121,11 @@ function initSocketIO(io) {
           content: content.trim(),
         });
 
-        // Update conversation timestamp
+        // Update conversation timestamp and un-hide for participants on new message
         conv.lastMessageAt = new Date();
+        if (conv.deletedBy && conv.deletedBy.length > 0) {
+          conv.deletedBy = [];
+        }
         await conv.save();
 
         // Populate sender info

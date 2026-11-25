@@ -26,6 +26,7 @@ import {
   Calendar,
   MapPin,
   Star,
+  Trash2,
 } from 'lucide-react'
 
 export default function Messages() {
@@ -224,14 +225,23 @@ export default function Messages() {
       }
     }
 
+    const handleMessageDeleted = ({ conversationId, messageId }) => {
+      if (conversationId === activeConvId) {
+        setMessages((prev) => prev.filter((m) => m._id !== messageId))
+      }
+      fetchConversations()
+    }
+
     socket.on('new_message', handleNewMessage)
     socket.on('user_typing', handleTyping)
     socket.on('user_stop_typing', handleStopTyping)
+    socket.on('message_deleted', handleMessageDeleted)
 
     return () => {
       socket.off('new_message', handleNewMessage)
       socket.off('user_typing', handleTyping)
       socket.off('user_stop_typing', handleStopTyping)
+      socket.off('message_deleted', handleMessageDeleted)
     }
   }, [socket, activeConvId, currentUserId, markRead, fetchConversations, conversations, fetchActiveOrder])
 
@@ -255,6 +265,51 @@ export default function Messages() {
       fetchConversations()
     } catch (err) {
       console.error(err)
+    }
+  }
+
+  // ─── Delete Conversation & Delete Message ────────────────────────
+  const handleDeleteConversation = async (convId, e) => {
+    if (e) e.stopPropagation()
+    if (!window.confirm('Delete this chat? It will be removed from your inbox.')) return
+    try {
+      const res = await fetch(`/api/chat/conversations/${convId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to delete chat')
+      }
+      setConversations((prev) => prev.filter((c) => c._id !== convId))
+      if (activeConvId === convId) {
+        leaveConversation(convId)
+        setActiveConvId(null)
+        setMessages([])
+        setActiveOrder(null)
+        setActiveTransaction(null)
+        setShowSidebar(true)
+      }
+    } catch (err) {
+      alert(err.message || 'Failed to delete chat')
+    }
+  }
+
+  const handleDeleteMessage = async (messageId) => {
+    if (!window.confirm('Delete this message?')) return
+    try {
+      const res = await fetch(`/api/chat/messages/${messageId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to delete message')
+      }
+      setMessages((prev) => prev.filter((m) => m._id !== messageId))
+      fetchConversations()
+    } catch (err) {
+      alert(err.message || 'Failed to delete message')
     }
   }
 
@@ -519,61 +574,74 @@ export default function Messages() {
                 const listing = conv.listingId
 
                 return (
-                  <button
+                  <div
                     key={conv._id}
-                    onClick={() => {
-                      setActiveConvId(conv._id)
-                      setShowSidebar(false)
-                    }}
-                    className={`w-full text-left px-5 py-4 border-b border-slate-50 flex gap-3 transition cursor-pointer ${
+                    className={`relative group border-b border-slate-50 flex items-center transition ${
                       isActive
                         ? 'bg-blue-50/80 border-l-2 border-l-blue-600'
                         : 'hover:bg-slate-50'
                     }`}
                   >
-                    {/* Avatar */}
-                    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-bold text-sm flex items-center justify-center shrink-0 overflow-hidden">
-                      {other?.profilePictureUrl ? (
-                        <img
-                          src={other.profilePictureUrl}
-                          alt={other.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        (other?.name || 'U').charAt(0).toUpperCase()
-                      )}
-                    </div>
+                    <button
+                      onClick={() => {
+                        setActiveConvId(conv._id)
+                        setShowSidebar(false)
+                      }}
+                      className="flex-1 min-w-0 text-left px-5 py-4 flex gap-3 cursor-pointer"
+                    >
+                      {/* Avatar */}
+                      <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-bold text-sm flex items-center justify-center shrink-0 overflow-hidden">
+                        {other?.profilePictureUrl ? (
+                          <img
+                            src={other.profilePictureUrl}
+                            alt={other.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          (other?.name || 'U').charAt(0).toUpperCase()
+                        )}
+                      </div>
 
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-semibold text-slate-900 truncate">
-                          {other?.name || 'User'}
-                        </span>
-                        {conv.lastMessage && (
-                          <span className="text-[10px] text-slate-400 shrink-0">
-                            {formatTime(conv.lastMessage.createdAt)}
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-semibold text-slate-900 truncate">
+                            {other?.name || 'User'}
                           </span>
+                          {conv.lastMessage && (
+                            <span className="text-[10px] text-slate-400 shrink-0">
+                              {formatTime(conv.lastMessage.createdAt)}
+                            </span>
+                          )}
+                        </div>
+                        {listing && (
+                          <p className="text-[11px] text-blue-600 font-medium truncate flex items-center gap-1 mt-0.5">
+                            <Image className="w-3 h-3" />
+                            {listing.title}
+                          </p>
                         )}
+                        <div className="flex items-center justify-between mt-1">
+                          <p className="text-xs text-slate-500 truncate">
+                            {conv.lastMessage?.content || 'No messages yet'}
+                          </p>
+                          {conv.unreadCount > 0 && (
+                            <span className="bg-blue-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0 ml-2">
+                              {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      {listing && (
-                        <p className="text-[11px] text-blue-600 font-medium truncate flex items-center gap-1 mt-0.5">
-                          <Image className="w-3 h-3" />
-                          {listing.title}
-                        </p>
-                      )}
-                      <div className="flex items-center justify-between mt-1">
-                        <p className="text-xs text-slate-500 truncate">
-                          {conv.lastMessage?.content || 'No messages yet'}
-                        </p>
-                        {conv.unreadCount > 0 && (
-                          <span className="bg-blue-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0 ml-2">
-                            {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </button>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => handleDeleteConversation(conv._id, e)}
+                      title="Delete chat"
+                      aria-label="Delete chat"
+                      className="mr-3 p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition cursor-pointer shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 )
               })
             )}
@@ -625,16 +693,27 @@ export default function Messages() {
                   </div>
                 </div>
 
-                {/* Make Offer button right inside Chat header (for buyer) */}
-                {isBuyer &&
-                  (!activeOrder || ['rejected', 'cancelled'].includes(activeOrder.status)) && (
-                    <button
-                      onClick={() => setShowOfferModal(true)}
-                      className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-xs transition cursor-pointer shrink-0"
-                    >
-                      <Tag className="w-3.5 h-3.5" /> Make Offer
-                    </button>
-                  )}
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* Make Offer button right inside Chat header (for buyer) */}
+                  {isBuyer &&
+                    (!activeOrder || ['rejected', 'cancelled'].includes(activeOrder.status)) && (
+                      <button
+                        onClick={() => setShowOfferModal(true)}
+                        className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-xs transition cursor-pointer shrink-0"
+                      >
+                        <Tag className="w-3.5 h-3.5" /> Make Offer
+                      </button>
+                    )}
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteConversation(activeConv._id)}
+                    title="Delete chat"
+                    aria-label="Delete chat"
+                    className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               {/* ─── Integrated Active Offer Banner directly in Chat ───── */}
@@ -956,8 +1035,21 @@ export default function Messages() {
                     return (
                       <div
                         key={msg._id}
-                        className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
+                        className={`group flex items-center gap-1.5 ${
+                          isMine ? 'justify-end' : 'justify-start'
+                        }`}
                       >
+                        {isMine && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteMessage(msg._id)}
+                            title="Delete message"
+                            aria-label="Delete message"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition cursor-pointer shrink-0"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                         <div
                           className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
                             isMine

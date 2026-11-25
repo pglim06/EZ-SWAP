@@ -56,6 +56,7 @@ app.use('/api/admin', require('./routes/adminRoutes'));      // T16: Admin Dashb
 app.use('/api/chat', require('./routes/chatRoutes'));
 
 // Initialize Socket.IO event handlers
+app.set('io', io);
 initSocketIO(io);
 
 const PORT = process.env.PORT || 5000;

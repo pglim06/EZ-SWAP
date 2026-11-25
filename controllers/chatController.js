@@ -10,6 +10,7 @@ exports.getConversations = async (req, res) => {
 
     const conversations = await Conversation.find({
       $or: [{ buyerId: userId }, { sellerId: userId }],
+      deletedBy: { $ne: userId },
     })
       .populate('buyerId', 'name email profilePictureUrl')
       .populate('sellerId', 'name email profilePictureUrl')
@@ -75,6 +76,11 @@ exports.startConversation = async (req, res) => {
 
     if (!conversation) {
       conversation = await Conversation.create({ listingId, buyerId, sellerId });
+    } else if (conversation.deletedBy?.some((id) => id.toString() === buyerId.toString())) {
+      conversation.deletedBy = conversation.deletedBy.filter(
+        (id) => id.toString() !== buyerId.toString()
+      );
+      await conversation.save();
     }
 
     // Populate for the response
@@ -169,8 +175,11 @@ exports.sendMessage = async (req, res) => {
       content: content.trim(),
     });
 
-    // Update conversation's lastMessageAt timestamp
+    // Update conversation's lastMessageAt timestamp and un-hide on new message
     conversation.lastMessageAt = new Date();
+    if (conversation.deletedBy && conversation.deletedBy.length > 0) {
+      conversation.deletedBy = [];
+    }
     await conversation.save();
 
     const populated = await Message.findById(message._id).populate(
@@ -194,6 +203,7 @@ exports.getUnreadCount = async (req, res) => {
     // Find all conversations where this user is a participant
     const conversations = await Conversation.find({
       $or: [{ buyerId: userId }, { sellerId: userId }],
+      deletedBy: { $ne: userId },
     }).select('_id');
 
     const conversationIds = conversations.map((c) => c._id);
@@ -208,5 +218,93 @@ exports.getUnreadCount = async (req, res) => {
   } catch (error) {
     console.error('getUnreadCount error:', error);
     res.status(500).json({ success: false, message: 'Failed to get unread count.' });
+  }
+};
+
+// ─── DELETE /api/chat/conversations/:conversationId ─────────────────────────
+// Delete (hide) a conversation for the current user; purge if both participants deleted it
+exports.deleteConversation = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { conversationId } = req.params;
+
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ success: false, message: 'Conversation not found.' });
+    }
+
+    const isBuyer = conversation.buyerId.toString() === userId.toString();
+    const isSeller = conversation.sellerId.toString() === userId.toString();
+    if (!isBuyer && !isSeller) {
+      return res.status(403).json({ success: false, message: 'Access denied.' });
+    }
+
+    await Message.updateMany(
+      { conversationId, senderId: { $ne: userId }, isRead: false },
+      { isRead: true }
+    );
+
+    const alreadyDeleted = conversation.deletedBy?.some(
+      (id) => id.toString() === userId.toString()
+    );
+    if (!alreadyDeleted) {
+      conversation.deletedBy = [...(conversation.deletedBy || []), userId];
+    }
+
+    const buyerDeleted = conversation.deletedBy.some(
+      (id) => id.toString() === conversation.buyerId.toString()
+    );
+    const sellerDeleted = conversation.deletedBy.some(
+      (id) => id.toString() === conversation.sellerId.toString()
+    );
+
+    if (buyerDeleted && sellerDeleted) {
+      await Message.deleteMany({ conversationId });
+      await Conversation.findByIdAndDelete(conversationId);
+    } else {
+      await conversation.save();
+    }
+
+    res.json({ success: true, message: 'Conversation deleted.' });
+  } catch (error) {
+    console.error('deleteConversation error:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete conversation.' });
+  }
+};
+
+// ─── DELETE /api/chat/messages/:messageId ───────────────────────────────────
+// Delete a single message sent by the logged-in user
+exports.deleteMessage = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { messageId } = req.params;
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ success: false, message: 'Message not found.' });
+    }
+
+    if (message.senderId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only delete your own messages.',
+      });
+    }
+
+    const conversationId = message.conversationId.toString();
+    await Message.findByIdAndDelete(messageId);
+
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`conv:${conversationId}`).emit('message_deleted', {
+        conversationId,
+        messageId,
+      });
+    }
+
+    res.json({ success: true, message: 'Message deleted.', messageId, conversationId });
+  } catch (error) {
+    console.error('deleteMessage error:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete message.' });
   }
 };
