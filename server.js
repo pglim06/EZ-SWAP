@@ -4,6 +4,8 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const path = require('path');
+const fs = require('fs');
 const connectDB = require('./config/db');
 const initSocketIO = require('./socket/socketHandler');
 
@@ -11,10 +13,16 @@ const app = express();
 const server = http.createServer(app);
 
 // ─── CORS origins (shared between Express and Socket.IO) ─────────────────────
+const envOrigins = (process.env.CLIENT_URL || '')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 const allowedOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:3000',
+  ...envOrigins,
 ];
 
 // ─── Socket.IO initialization (T11: Real-Time Messaging) ────────────────────
@@ -58,6 +66,18 @@ app.use('/api/chat', require('./routes/chatRoutes'));
 // Initialize Socket.IO event handlers
 app.set('io', io);
 initSocketIO(io);
+
+// Serve built React frontend in production when client/dist exists
+const clientDistPath = path.join(__dirname, 'client', 'dist');
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+  app.get('/{*splat}', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/socket.io')) {
+      return next();
+    }
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+}
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
