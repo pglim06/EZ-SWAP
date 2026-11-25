@@ -236,9 +236,9 @@ npm run test:recommendation
 
 ---
 
-## 🌐 Deployment Guide (Vercel + Render + Atlas)
+## 🌐 Deployment Guide (Render + Atlas)
 
-### Backend Deployment (Render)
+### Frontend & Backend Deployment (Render)
 1. Push repository to GitHub.
 2. In [Render Dashboard](https://dashboard.render.com), create a **New Web Service**.
 3. Link your repository `EZ-SWAP`.
@@ -249,11 +249,3 @@ npm run test:recommendation
 5. Add Environment Variables from `.env` (`MONGODB_URI`, `JWT_SECRET`, `CLOUDINARY_*`).
 6. Deploy and note your production URL (e.g., `https://ez-swap-api.onrender.com`).
 
-### Frontend Deployment (Vercel)
-1. In [Vercel Dashboard](https://vercel.com), import the Git repository.
-2. Configure settings:
-   - **Root Directory**: `client`
-   - **Framework Preset**: `Vite`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-3. Deploy!
