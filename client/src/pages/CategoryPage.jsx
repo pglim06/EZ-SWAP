@@ -233,7 +233,7 @@ export default function CategoryPage() {
       if (sort) params.append('sort', sort)
       params.append('limit', '1000')
 
-      const url = `http://localhost:5000/api/listings?${params.toString()}`
+      const url = `/api/listings?${params.toString()}`
       const res = await fetch(url)
       if (!res.ok) throw new Error('Failed to fetch from backend')
 

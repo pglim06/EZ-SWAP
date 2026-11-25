@@ -24,7 +24,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-const API = 'http://localhost:5000/api/admin';
+const API = `${import.meta.env.VITE_API_URL || ''}/api/admin`;
 
 // ─── Reusable tiny stat card ─────────────────────────────────────────────────
 function StatCard({ label, value, icon: Icon, color = 'text-blue-600', bg = 'bg-blue-50' }) {

@@ -1,15 +1,16 @@
 require('dotenv').config();
+const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const path = require('path');
-const fs = require('fs');
 const connectDB = require('./config/db');
 const initSocketIO = require('./socket/socketHandler');
 
 const app = express();
+app.set('trust proxy', 1);
 const server = http.createServer(app);
 
 // ─── CORS origins (shared between Express and Socket.IO) ─────────────────────
@@ -23,7 +24,8 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'http://localhost:3000',
   ...envOrigins,
-];
+  process.env.RENDER_EXTERNAL_URL,
+].filter(Boolean);
 
 // ─── Socket.IO initialization (T11: Real-Time Messaging) ────────────────────
 const io = new Server(server, {
@@ -71,11 +73,15 @@ initSocketIO(io);
 const clientDistPath = path.join(__dirname, 'client', 'dist');
 if (fs.existsSync(clientDistPath)) {
   app.use(express.static(clientDistPath));
-  app.get('/{*splat}', (req, res, next) => {
-    if (req.path.startsWith('/api') || req.path.startsWith('/socket.io')) {
-      return next();
+  app.use((req, res, next) => {
+    if (
+      req.method === 'GET' &&
+      !req.path.startsWith('/api') &&
+      !req.path.startsWith('/socket.io')
+    ) {
+      return res.sendFile(path.join(clientDistPath, 'index.html'));
     }
-    res.sendFile(path.join(clientDistPath, 'index.html'));
+    next();
   });
 }
 

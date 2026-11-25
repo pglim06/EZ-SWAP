@@ -27,7 +27,7 @@ function sendTokenResponse(user, statusCode, res, extra = {}) {
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    sameSite: process.env.COOKIE_SAME_SITE || 'lax',
   };
 
   const userObj = user.toObject ? user.toObject() : { ...user };
@@ -438,6 +438,8 @@ exports.logout = (req, res) => {
   res.cookie('token', 'none', {
     expires: new Date(Date.now() + 5 * 1000),
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.COOKIE_SAME_SITE || 'lax',
   });
 
   res.status(200).json({
@@ -532,6 +534,8 @@ exports.deleteAccount = async (req, res) => {
     res.cookie('token', 'none', {
       expires: new Date(Date.now() + 5 * 1000),
       httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.COOKIE_SAME_SITE || 'lax',
     });
 
     res.status(200).json({

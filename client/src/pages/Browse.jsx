@@ -320,7 +320,7 @@ export default function Browse() {
       if (sort) params.append('sort', sort)
       params.append('limit', '1000')
 
-      const url = `http://localhost:5000/api/listings?${params.toString()}`
+      const url = `/api/listings?${params.toString()}`
       const res = await fetch(url)
       if (!res.ok) throw new Error('Failed to fetch from backend')
 
@@ -451,7 +451,7 @@ export default function Browse() {
   const handleSeedDatabase = async () => {
     try {
       setSeeding(true)
-      const res = await fetch('http://localhost:5000/api/listings/seed?force=true', { method: 'POST' })
+      const res = await fetch('/api/listings/seed?force=true', { method: 'POST' })
       const data = await res.json()
       if (data.success) {
         fetchListings()
