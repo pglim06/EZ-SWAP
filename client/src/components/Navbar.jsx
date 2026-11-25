@@ -1,11 +1,19 @@
-import { Link } from 'react-router-dom'
-import { PlusCircle, User, ShoppingBag, LogOut, ShieldCheck, MessageCircle } from 'lucide-react'
+import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { PlusCircle, User, ShoppingBag, LogOut, ShieldCheck, MessageCircle, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useSocket } from '../context/SocketContext'
 
 export default function Navbar() {
+  const location = useLocation()
   const { user, isGuest, logout } = useAuth()
   const { unreadCount } = useSocket()
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
+
+  // Do not show navbar on the login page
+  if (location.pathname === '/login' || location.pathname.startsWith('/login/')) {
+    return null
+  }
 
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-xs">
@@ -72,7 +80,7 @@ export default function Navbar() {
               </Link>
 
               <button
-                onClick={logout}
+                onClick={() => setShowSignOutConfirm(true)}
                 title="Sign Out"
                 className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-red-600 px-2.5 py-2 rounded-lg hover:bg-red-50 transition cursor-pointer"
               >
@@ -110,6 +118,51 @@ export default function Navbar() {
           </Link>
         </div>
       </div>
+
+      {/* Sign Out Confirmation Modal */}
+      {showSignOutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl relative animate-in zoom-in-95 duration-150">
+            <button
+              onClick={() => setShowSignOutConfirm(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg transition cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <LogOut className="w-6 h-6" />
+            </div>
+
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-bold text-slate-900">Confirm Sign Out</h3>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                Are you sure you want to sign out of your account? You will need to sign in again to chat, post, or manage your listings.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowSignOutConfirm(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setShowSignOutConfirm(false)
+                  await logout()
+                }}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
+              >
+                Yes, Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   )
 }
