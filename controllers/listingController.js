@@ -2,6 +2,7 @@ const Listing = require('../models/Listing');
 const User = require('../models/User'); // 注册 User schema，确保 populate('sellerId') 能正常工作
 const cloudinary = require('../config/cloudinary');
 const { getPriceInsightForListing } = require('../utils/priceInsight');
+const { SUBCATEGORY_DATA, DEMO_SELLERS, CATEGORY_IMAGES } = require('../scripts/seedCategories');
 
 // Helper to normalize category names across frontend and database
 function normalizeCategory(cat) {
@@ -306,7 +307,7 @@ exports.getListings = async (req, res) => {
 
     // 6. Pagination
     const pageNum = Math.max(1, parseInt(page, 10));
-    const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10)));
+    const limitNum = Math.max(1, Math.min(500, parseInt(limit || 200, 10)));
     const skip = (pageNum - 1) * limitNum;
 
     // Execute query
@@ -317,11 +318,19 @@ exports.getListings = async (req, res) => {
       .skip(skip)
       .limit(limitNum);
 
-    const normalizedListings = listings.map((l) => {
+    let normalizedListings = listings.map((l) => {
       const obj = l.toObject ? l.toObject() : { ...l };
       obj.condition = obj.condition === 'New' ? 'New' : 'Used';
       return obj;
     });
+
+    // Shuffle if requested
+    if (sort === 'shuffle' || sort === 'random') {
+      for (let i = normalizedListings.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [normalizedListings[i], normalizedListings[j]] = [normalizedListings[j], normalizedListings[i]];
+      }
+    }
 
     res.status(200).json({
       success: true,
@@ -355,109 +364,67 @@ exports.seedSampleListings = async (req, res) => {
       });
     }
 
-    // Find or create a verified demo seller
-    let demoSeller = await User.findOne({ email: 'seller@graduate.utm.my' });
-    if (!demoSeller) {
-      demoSeller = await User.create({
-        name: 'Ahmad Faris',
-        email: 'seller@graduate.utm.my',
-        passwordHash: 'scrypt:demo:hash',
-        universityId: 'A23CS0123',
-        verificationStatus: 'verified',
-        averageRating: 4.9,
-        ratingsCount: 14,
-      });
+    // 1. Ensure demo sellers exist
+    const sellerIds = [];
+    for (const s of DEMO_SELLERS) {
+      let user = await User.findOne({ email: s.email });
+      if (!user) {
+        user = await User.create({
+          ...s,
+          passwordHash: 'scrypt:demo:hash',
+          verificationStatus: 'verified',
+          isEmailApproved: true,
+          role: 'student',
+        });
+      }
+      sellerIds.push(user._id);
     }
 
+    // 2. Clear old seeded listings if force=true
     if (req.query.force) {
-      await Listing.deleteMany({ sellerId: demoSeller._id });
+      await Listing.deleteMany({ sellerId: { $in: sellerIds } });
     }
 
-    const sampleListings = [
-      {
-        sellerId: demoSeller._id,
-        title: 'Engineering Mathematics 1 (Calculus & Algebra)',
-        description: 'Original textbook for first-year engineering students. No highlighted pages, like new.',
-        price: 35,
-        category: 'Textbooks',
-        condition: 'Used',
-        tags: ['mathematics', 'calculus', 'algebra', 'engineering', 'textbook'],
-        viewsCount: 28,
-        images: [{ imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80', displayOrder: 0 }],
-        status: 'active',
-      },
-      {
-        sellerId: demoSeller._id,
-        title: 'Logitech Wireless Silent Mouse M331',
-        description: 'Used for only 1 semester in UTM KRP dorm. Perfect working condition, includes AA battery.',
-        price: 45,
-        category: 'Electronics',
-        condition: 'Used',
-        tags: ['logitech', 'mouse', 'wireless', 'bluetooth', 'accessories'],
-        viewsCount: 42,
-        images: [{ imageUrl: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&auto=format&fit=crop&q=80', displayOrder: 0 }],
-        status: 'active',
-      },
-      {
-        sellerId: demoSeller._id,
-        title: 'Rechargeable LED Study Desk Lamp',
-        description: 'Compact 3-level brightness study lamp with flexible neck. Ideal for late-night dorm study.',
-        price: 20,
-        category: 'Dorm',
-        condition: 'New',
-        tags: ['lamp', 'desk', 'dorm', 'led', 'study'],
-        viewsCount: 19,
-        images: [{ imageUrl: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600&auto=format&fit=crop&q=80', displayOrder: 0 }],
-        status: 'active',
-      },
-      {
-        sellerId: demoSeller._id,
-        title: 'Official UTM Corporate Polo Shirt (Size L)',
-        description: 'Worn only once during orientation week. Clean, washed, no stains.',
-        price: 18,
-        category: 'Clothing',
-        condition: 'Used',
-        tags: ['utm', 'polo', 'shirt', 'clothing', 'apparel'],
-        viewsCount: 15,
-        images: [{ imageUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80', displayOrder: 0 }],
-        status: 'active',
-      },
-      {
-        sellerId: demoSeller._id,
-        title: 'Campus Commute Fixed Gear Bicycle',
-        description: 'Great fixie bike for traveling between Kolej Perdana and faculty buildings. New brake pads.',
-        price: 120,
-        category: 'Other',
-        condition: 'Used',
-        tags: ['bicycle', 'commute', 'transport', 'sports', 'bike'],
-        viewsCount: 35,
-        images: [{ imageUrl: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=600&auto=format&fit=crop&q=80', displayOrder: 0 }],
-        status: 'active',
-      },
-      {
-        sellerId: demoSeller._id,
-        title: 'Laptop Thermal Paste & Deep Dust Cleaning Service',
-        description: 'Computer Science student offering laptop servicing, overheating fixes, and fan dusting.',
-        price: 25,
-        category: 'Services',
-        condition: 'New',
-        tags: ['laptop', 'cleaning', 'service', 'repair', 'hardware'],
-        viewsCount: 31,
-        images: [{ imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80', displayOrder: 0 }],
-        status: 'active',
-      },
-    ];
+    // 3. Build all listings from SUBCATEGORY_DATA
+    const docs = [];
+    let idx = 0;
+    for (const group of SUBCATEGORY_DATA) {
+      for (const item of group.items) {
+        const sellerId = sellerIds[idx % sellerIds.length];
+        docs.push({
+          sellerId,
+          title: item.title,
+          description: item.desc,
+          price: item.price,
+          category: group.category,
+          condition: item.condition,
+          tags: [
+            group.category.toLowerCase(),
+            group.subcategory.toLowerCase(),
+            item.condition.toLowerCase(),
+          ],
+          viewsCount: (idx * 7) % 85 + 5,
+          images: [{ imageUrl: CATEGORY_IMAGES[group.category], displayOrder: 0 }],
+          status: 'active',
+        });
+        idx++;
+      }
+    }
 
-    const inserted = await Listing.insertMany(sampleListings);
+    const inserted = await Listing.insertMany(docs);
 
     res.status(201).json({
       success: true,
-      message: `Successfully seeded ${inserted.length} sample marketplace listings!`,
+      message: `Successfully seeded ${inserted.length} comprehensive sample marketplace listings across all categories!`,
       count: inserted.length,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
+      message: error.message || 'Error seeding listings',
+    });
+  }
+};
       message: error.message || 'Error seeding listings',
     });
   }

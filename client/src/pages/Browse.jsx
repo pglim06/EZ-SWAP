@@ -24,6 +24,7 @@ import {
   Database,
   Loader2,
   MessageCircle,
+  Shuffle,
 } from 'lucide-react'
 
 // 1. Mudah.my-style categories
@@ -39,8 +40,9 @@ const CATEGORIES = [
 
 const CONDITIONS = ['All', 'New', 'Used']
 
-// Fallback demo items if backend database is offline or empty
+// Comprehensive fallback demo items across all 6 categories
 export const FALLBACK_ITEMS = [
+  // ── Textbooks ──
   {
     _id: 'sample-1',
     title: 'Engineering Mathematics 1 (Calculus & Algebra)',
@@ -53,6 +55,38 @@ export const FALLBACK_ITEMS = [
   },
   {
     _id: 'sample-2',
+    title: 'Thomas Calculus Early Transcendentals (14th Ed)',
+    category: 'Textbooks',
+    price: 45,
+    condition: 'Used',
+    location: 'UTM Library (PSZ)',
+    sellerId: { name: 'Sarah Tan', averageRating: 5.0, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1532012164546-f432f2e3edd4?w=500&auto=format&fit=crop&q=60' }],
+  },
+  {
+    _id: 'sample-3',
+    title: 'Starting Out with C++ from Control Structures (Tony Gaddis)',
+    category: 'Textbooks',
+    price: 38,
+    condition: 'Used',
+    location: 'Faculty of Computing (FC)',
+    sellerId: { name: 'Kevin Lee', averageRating: 4.8, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&auto=format&fit=crop&q=60' }],
+  },
+  {
+    _id: 'sample-4',
+    title: 'University Physics with Modern Physics (14th Edition)',
+    category: 'Textbooks',
+    price: 42,
+    condition: 'Used',
+    location: 'Kolej Tun Dr Ismail (KTDI)',
+    sellerId: { name: 'Wei Ming', averageRating: 4.8, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=500&auto=format&fit=crop&q=60' }],
+  },
+
+  // ── Electronics ──
+  {
+    _id: 'sample-5',
     title: 'Logitech Wireless Silent Mouse M331',
     category: 'Electronics',
     price: 45,
@@ -62,8 +96,40 @@ export const FALLBACK_ITEMS = [
     images: [{ imageUrl: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=500&auto=format&fit=crop&q=60' }],
   },
   {
-    _id: 'sample-3',
-    title: 'Rechargeable LED Study Desk Lamp',
+    _id: 'sample-6',
+    title: 'Casio fx-570EX ClassWiz Scientific Calculator',
+    category: 'Electronics',
+    price: 55,
+    condition: 'Used',
+    location: 'UTM Arked Meranti',
+    sellerId: { name: 'Ahmad Faris', averageRating: 4.9, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=500&auto=format&fit=crop&q=60' }],
+  },
+  {
+    _id: 'sample-7',
+    title: 'Baseus 65W GaN Fast Charger (Dual USB-C + USB-A)',
+    category: 'Electronics',
+    price: 49,
+    condition: 'New',
+    location: 'KDSE / KRP Dorms',
+    sellerId: { name: 'Hafiz Azman', averageRating: 4.9, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=500&auto=format&fit=crop&q=60' }],
+  },
+  {
+    _id: 'sample-8',
+    title: 'Dell 24-inch Full HD IPS Monitor (HDMI/DisplayPort)',
+    category: 'Electronics',
+    price: 180,
+    condition: 'Used',
+    location: 'Kolej Perdana (KP)',
+    sellerId: { name: 'Kevin Lee', averageRating: 4.8, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500&auto=format&fit=crop&q=60' }],
+  },
+
+  // ── Dorm Essentials ──
+  {
+    _id: 'sample-9',
+    title: 'Rechargeable LED Study Desk Lamp (3 Color Temps)',
     category: 'Dorm',
     price: 20,
     condition: 'New',
@@ -72,7 +138,39 @@ export const FALLBACK_ITEMS = [
     images: [{ imageUrl: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=500&auto=format&fit=crop&q=60' }],
   },
   {
-    _id: 'sample-4',
+    _id: 'sample-10',
+    title: 'Khind 12-inch 3-Speed Table Fan for Dorm Rooms',
+    category: 'Dorm',
+    price: 38,
+    condition: 'Used',
+    location: 'KDSE Dorms',
+    sellerId: { name: 'Nurul Huda', averageRating: 4.7, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1618941716939-553df3c6c278?w=500&auto=format&fit=crop&q=60' }],
+  },
+  {
+    _id: 'sample-11',
+    title: 'Single Mattress Foam Topper & Cotton Fitted Sheet',
+    category: 'Dorm',
+    price: 32,
+    condition: 'Used',
+    location: 'Kolej Rahman Putra (KRP)',
+    sellerId: { name: 'Sarah Tan', averageRating: 5.0, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1540518614846-7ede433c4ef3?w=500&auto=format&fit=crop&q=60' }],
+  },
+  {
+    _id: 'sample-12',
+    title: 'Stainless Steel Foldable Clothes Drying Rack',
+    category: 'Dorm',
+    price: 25,
+    condition: 'New',
+    location: 'KTDI / KTR',
+    sellerId: { name: 'Wei Ming', averageRating: 4.8, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1582738411706-bfc8e691d1c2?w=500&auto=format&fit=crop&q=60' }],
+  },
+
+  // ── Fashion & Wear ──
+  {
+    _id: 'sample-13',
     title: 'Official UTM Corporate Polo Shirt (Size L)',
     category: 'Clothing',
     price: 18,
@@ -82,8 +180,72 @@ export const FALLBACK_ITEMS = [
     images: [{ imageUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&auto=format&fit=crop&q=60' }],
   },
   {
-    _id: 'sample-5',
-    title: 'Campus Commute Fixed Gear Bicycle',
+    _id: 'sample-14',
+    title: 'UTM Faculty of Computing Classic Black Hoodie (Size XL)',
+    category: 'Clothing',
+    price: 45,
+    condition: 'Used',
+    location: 'Faculty of Computing',
+    sellerId: { name: 'Ahmad Faris', averageRating: 4.9, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=500&auto=format&fit=crop&q=60' }],
+  },
+  {
+    _id: 'sample-15',
+    title: 'Waterproof Laptop Backpack with USB Charging Port',
+    category: 'Clothing',
+    price: 32,
+    condition: 'New',
+    location: 'Arked Cengal',
+    sellerId: { name: 'Hafiz Azman', averageRating: 4.9, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&auto=format&fit=crop&q=60' }],
+  },
+  {
+    _id: 'sample-16',
+    title: 'Nike Revolution Walking Sneakers (Size UK 8 / EU 42)',
+    category: 'Clothing',
+    price: 70,
+    condition: 'Used',
+    location: 'UTM Stadium / Sports Hall',
+    sellerId: { name: 'Kevin Lee', averageRating: 4.8, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&auto=format&fit=crop&q=60' }],
+  },
+
+  // ── Campus Services ──
+  {
+    _id: 'sample-17',
+    title: 'PC & Laptop Dust Cleaning & Thermal Paste Repasting Service',
+    category: 'Services',
+    price: 25,
+    condition: 'New',
+    location: 'UTM Lingkaran Ilmu',
+    sellerId: { name: 'Kevin Lee', averageRating: 5.0, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=60' }],
+  },
+  {
+    _id: 'sample-18',
+    title: 'UTM FYP Thesis & Proposal Hardcover Binding & Printing',
+    category: 'Services',
+    price: 15,
+    condition: 'New',
+    location: 'UTM Arked Meranti Printing Shop',
+    sellerId: { name: 'Ahmad Faris', averageRating: 4.9, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=500&auto=format&fit=crop&q=60' }],
+  },
+  {
+    _id: 'sample-19',
+    title: 'Weekend Carpool / Ride Sharing: UTM Skudai ↔ Senai Airport',
+    category: 'Services',
+    price: 12,
+    condition: 'New',
+    location: 'UTM Main Gate Pickup',
+    sellerId: { name: 'Hafiz Azman', averageRating: 4.9, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=500&auto=format&fit=crop&q=60' }],
+  },
+
+  // ── Bikes & Sports ──
+  {
+    _id: 'sample-20',
+    title: 'Campus Commute Fixed Gear Bicycle with Basket',
     category: 'Other',
     price: 120,
     condition: 'Used',
@@ -92,14 +254,24 @@ export const FALLBACK_ITEMS = [
     images: [{ imageUrl: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=500&auto=format&fit=crop&q=60' }],
   },
   {
-    _id: 'sample-6',
-    title: 'PC & Laptop Dust Cleaning & Repasting Service',
-    category: 'Services',
-    price: 25,
-    condition: 'New',
-    location: 'UTM Lingkaran Ilmu',
-    sellerId: { name: 'Kevin Lee', averageRating: 5.0, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=60' }],
+    _id: 'sample-21',
+    title: 'Yonex Astrox Carbon Badminton Racket with Full Cover',
+    category: 'Other',
+    price: 65,
+    condition: 'Used',
+    location: 'UTM Sports Complex',
+    sellerId: { name: 'Sarah Tan', averageRating: 5.0, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=500&auto=format&fit=crop&q=60' }],
+  },
+  {
+    _id: 'sample-22',
+    title: 'Molten Official Size 5 Outdoor Football',
+    category: 'Other',
+    price: 35,
+    condition: 'Used',
+    location: 'Padang UTM',
+    sellerId: { name: 'Ahmad Faris', averageRating: 4.9, verificationStatus: 'verified' },
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=500&auto=format&fit=crop&q=60' }],
   },
 ]
 
@@ -193,11 +365,29 @@ export default function Browse() {
       // Sort client fallback
       if (sort === 'price-asc') filtered.sort((a, b) => a.price - b.price)
       if (sort === 'price-desc') filtered.sort((a, b) => b.price - a.price)
+      if (sort === 'shuffle') {
+        for (let i = filtered.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [filtered[i], filtered[j]] = [filtered[j], filtered[i]]
+        }
+      }
 
       setListings(filtered)
     } finally {
       setLoading(false)
     }
+  }
+
+  // Shuffle currently displayed listings
+  const handleShuffleListings = () => {
+    setListings((prev) => {
+      const arr = [...prev]
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]]
+      }
+      return arr
+    })
   }
 
   // Trigger search on filter changes with debounce
@@ -424,6 +614,7 @@ export default function Browse() {
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="newest">Newest Listed First</option>
+                <option value="shuffle">🔀 Shuffled / Random</option>
                 <option value="price-asc">Price: Low to High</option>
                 <option value="price-desc">Price: High to Low</option>
                 <option value="oldest">Oldest Listed First</option>
@@ -518,20 +709,31 @@ export default function Browse() {
           />
         )} */}
 
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
             {selectedCat === 'All' ? 'All Recent Advertisements' : `${selectedCat} Listings`}
             <span className="text-xs text-slate-400 font-normal">({listings.length} items found)</span>
           </h2>
 
-          {hasActiveFilters && (
+          <div className="flex items-center gap-2">
             <button
-              onClick={resetFilters}
-              className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+              onClick={handleShuffleListings}
+              title="Shuffle all advertisements randomly"
+              className="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
             >
-              <X className="w-3.5 h-3.5" /> Clear Filters
+              <Shuffle className="w-3.5 h-3.5 text-blue-600" />
+              <span>Shuffle Ads</span>
             </button>
-          )}
+
+            {hasActiveFilters && (
+              <button
+                onClick={resetFilters}
+                className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+              >
+                <X className="w-3.5 h-3.5" /> Clear Filters
+              </button>
+            )}
+          </div>
         </div>
 
         {bookmarkError && (

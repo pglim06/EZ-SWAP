@@ -649,7 +649,11 @@ async function seedCategories() {
   console.log('Done.');
 }
 
-seedCategories().catch((err) => {
-  console.error('Seed failed:', err);
-  process.exit(1);
-});
+if (require.main === module) {
+  seedCategories().catch((err) => {
+    console.error('Seed failed:', err);
+    process.exit(1);
+  });
+}
+
+module.exports = { seedCategories, SUBCATEGORY_DATA, DEMO_SELLERS, CATEGORY_IMAGES };

@@ -30,6 +30,7 @@ import {
   Layers,
   CheckSquare,
   Square,
+  Shuffle,
 } from 'lucide-react'
 
 // Category definitions and subcategory chips (Mudah.my-style)
@@ -272,11 +273,29 @@ export default function CategoryPage() {
 
       if (sort === 'price-asc') filtered.sort((a, b) => a.price - b.price)
       if (sort === 'price-desc') filtered.sort((a, b) => b.price - a.price)
+      if (sort === 'shuffle') {
+        for (let i = filtered.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [filtered[i], filtered[j]] = [filtered[j], filtered[i]]
+        }
+      }
 
       setListings(filtered)
     } finally {
       setLoading(false)
     }
+  }
+
+  // Shuffle currently displayed category listings
+  const handleShuffleListings = () => {
+    setListings((prev) => {
+      const arr = [...prev]
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]]
+      }
+      return arr
+    })
   }
 
   // Trigger fetch whenever filters or active keyword change
@@ -501,6 +520,7 @@ export default function CategoryPage() {
                     className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                   >
                     <option value="newest">Newest Listed First</option>
+                    <option value="shuffle">🔀 Shuffled / Random</option>
                     <option value="price-asc">Price: Low to High</option>
                     <option value="price-desc">Price: High to Low</option>
                     <option value="oldest">Oldest Listed First</option>
@@ -583,6 +603,15 @@ export default function CategoryPage() {
           </div>
 
           <div className="flex items-center gap-2 pb-2">
+            <button
+              type="button"
+              onClick={handleShuffleListings}
+              title="Shuffle category listings randomly"
+              className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow-2xs"
+            >
+              <Shuffle className="w-3.5 h-3.5 text-blue-600" />
+              <span>Shuffle</span>
+            </button>
             <span className="text-xs text-slate-400 hidden sm:inline">Sort:</span>
             <select
               value={sort}
@@ -590,6 +619,7 @@ export default function CategoryPage() {
               className="text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-lg px-2.5 py-1 focus:outline-none cursor-pointer"
             >
               <option value="newest">Newest First</option>
+              <option value="shuffle">🔀 Shuffled / Random</option>
               <option value="price-asc">Price: Low to High</option>
               <option value="price-desc">Price: High to Low</option>
               <option value="oldest">Oldest First</option>
