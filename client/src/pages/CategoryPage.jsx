@@ -36,6 +36,16 @@ import {
 
 // Category definitions and subcategory chips (Mudah.my-style)
 export const CATEGORY_CONFIG = {
+  All: {
+    id: 'All',
+    name: 'All Ads',
+    displayName: 'All Categories',
+    icon: Layers,
+    color: 'text-blue-600',
+    bg: 'bg-blue-50',
+    border: 'border-blue-200',
+    subcategories: ['All Categories'],
+  },
   Textbooks: {
     id: 'Textbooks',
     name: 'Textbooks',
@@ -143,6 +153,15 @@ export const CATEGORY_CONFIG = {
 
 const ALL_CATEGORY_KEYS = Object.keys(CATEGORY_CONFIG)
 
+const CATEGORY_LABELS = {
+  Textbooks: 'Textbooks',
+  Electronics: 'Electronics',
+  Dorm: 'Dorm & Living',
+  Services: 'Campus Services',
+  Clothing: 'Fashion & Wear',
+  Other: 'Bikes & Sports',
+}
+
 const CAMPUS_LOCATIONS = [
   'Entire UTM Campus',
   'UTM Arked Meranti',
@@ -206,7 +225,7 @@ export default function CategoryPage() {
     try {
       setLoading(true)
       const params = new URLSearchParams()
-      params.append('category', currentKey)
+      if (currentKey !== 'All') params.append('category', currentKey)
       if (activeKeyword.trim()) params.append('keyword', activeKeyword.trim())
       if (selectedCondition !== 'All') params.append('condition', selectedCondition)
       if (minPrice !== '') params.append('minPrice', minPrice)
@@ -247,6 +266,7 @@ export default function CategoryPage() {
       // Fallback: match from FALLBACK_ITEMS
       const filtered = FALLBACK_ITEMS.filter((item) => {
         const matchesCat =
+          currentKey === 'All' ||
           item.category === currentKey ||
           (currentKey === 'Dorm Essentials' && item.category === 'Dorm') ||
           (currentKey === 'Fashion' && item.category === 'Clothing') ||
@@ -704,7 +724,7 @@ export default function CategoryPage() {
                       {/* Category & Location */}
                       <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
                         <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
-                          {item.category}
+                          {CATEGORY_LABELS[item.category] || item.category}
                         </span>
                         <span className="flex items-center gap-1 text-[11px] text-slate-500 truncate max-w-[140px]">
                           <MapPin className="w-3 h-3 text-slate-400 shrink-0" /> {location}

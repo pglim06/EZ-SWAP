@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Upload, X, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Upload, X, Loader2, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 
 const CATEGORIES = ['Textbooks', 'Electronics', 'Dorm', 'Services', 'Clothing', 'Other'];
 const CONDITIONS = ['New', 'Used'];
@@ -26,6 +26,7 @@ export default function CreateListing() {
     const [files, setFiles] = useState([]);
     const [previews, setPreviews] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
 
@@ -52,6 +53,52 @@ export default function CreateListing() {
         URL.revokeObjectURL(previews[index]); // 释放内存中的临时预览 URL
         setFiles(files.filter((_, i) => i !== index));
         setPreviews(previews.filter((_, i) => i !== index));
+    };
+
+    const handleAiAnalyzePhoto = async () => {
+        if (!files.length) {
+            setError('Please upload at least one photo first so AI can analyze it.');
+            return;
+        }
+        try {
+            setIsAnalyzing(true);
+            setError('');
+            const data = new FormData();
+            data.append('image', files[0]);
+            if (formData.title) data.append('title', formData.title);
+            if (formData.category) data.append('category', formData.category);
+            if (formData.condition) data.append('condition', formData.condition);
+            if (formData.price) data.append('price', formData.price);
+
+            const res = await fetch('/api/listings/analyze-image', {
+                method: 'POST',
+                body: data,
+            });
+            const result = await res.json();
+            if (!res.ok || !result.success) {
+                throw new Error(result.message || 'AI analysis failed');
+            }
+
+            const a = result.analysis;
+            const highlightsText = a.keyHighlights?.length
+                ? `\n\nKey Highlights:\n• ${a.keyHighlights.join('\n• ')}`
+                : '';
+            const conditionText = a.visualCondition
+                ? `\n\nVisible Condition: ${a.visualCondition}`
+                : '';
+
+            setFormData((prev) => ({
+                ...prev,
+                title: prev.title.trim() ? prev.title : (a.suggestedTitle || prev.title),
+                category: prev.title.trim() ? prev.category : (a.suggestedCategory || prev.category),
+                condition: prev.title.trim() ? prev.condition : (a.suggestedCondition || prev.condition),
+                description: `${a.productSummary}${conditionText}${highlightsText}`.trim(),
+            }));
+        } catch (err) {
+            setError(err.message || 'Could not analyze image with AI.');
+        } finally {
+            setIsAnalyzing(false);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -189,9 +236,25 @@ export default function CreateListing() {
 
                     {/* 商品描述 */}
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                            Description <span className="text-red-500">*</span>
-                        </label>
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                            <label className="block text-sm font-semibold text-slate-700">
+                                Description <span className="text-red-500">*</span>
+                            </label>
+                            <button
+                                type="button"
+                                onClick={handleAiAnalyzePhoto}
+                                disabled={isAnalyzing || files.length === 0}
+                                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 disabled:opacity-50 transition cursor-pointer"
+                                title={files.length === 0 ? 'Upload a photo first' : 'Generate buyer-friendly description from your photo'}
+                            >
+                                {isAnalyzing ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                )}
+                                {isAnalyzing ? 'Analyzing Photo...' : 'AI Describe from Photo'}
+                            </button>
+                        </div>
                         <textarea
                             name="description"
                             required

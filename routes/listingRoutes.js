@@ -5,6 +5,8 @@ const {
   getListings,
   getListingById,
   getListingPriceInsight,
+  analyzeImage,
+  analyzeListingPhoto,
   createListing,
   updateListing,
   deleteListing,
@@ -24,6 +26,10 @@ router.post('/seed', seedSampleListings);
 router.get('/recommendations', getRecommendations);
 router.get('/:id/similar', getSimilarListings);
 router.post('/:id/view', recordListingView);
+
+// AI Image Analysis endpoints (Gemini Vision)
+router.post('/analyze-image', upload.single('image'), analyzeImage);
+router.post('/:id/ai-analysis', analyzeListingPhoto);
 
 // Single listing details & price insight
 router.get('/:id/price-insight', getListingPriceInsight);

@@ -39,6 +39,15 @@ const CATEGORIES = [
   { id: 'Sports', name: 'Bikes & Sports', icon: Bike, color: 'text-teal-600', bg: 'bg-teal-50' },
 ]
 
+const CATEGORY_LABELS = {
+  Textbooks: 'Textbooks',
+  Electronics: 'Electronics',
+  Dorm: 'Dorm & Living',
+  Services: 'Campus Services',
+  Clothing: 'Fashion & Wear',
+  Other: 'Bikes & Sports',
+}
+
 const CONDITIONS = ['All', 'New', 'Used']
 
 // Comprehensive fallback demo items across all 6 categories
@@ -322,7 +331,7 @@ export default function Browse() {
         selectedCondition !== 'All' ||
         minPrice !== '' ||
         maxPrice !== '' ||
-        sort !== ''
+        sort !== 'shuffle'
 
       if (data.success && Array.isArray(data.listings) && data.listings.length > 0) {
         // Double-check price bounds client-side
@@ -792,7 +801,7 @@ export default function Browse() {
                     <div className="p-4">
                       <div className="flex items-center justify-between text-xs font-semibold mb-1">
                         <span className="text-blue-600 flex items-center gap-1">
-                          <Tag className="w-3.5 h-3.5" /> {item.category}
+                          <Tag className="w-3.5 h-3.5" /> {CATEGORY_LABELS[item.category] || item.category}
                         </span>
                         <span className="text-amber-500 flex items-center gap-0.5 text-[11px]">
                           <Star className="w-3 h-3 fill-amber-400 text-amber-400" />

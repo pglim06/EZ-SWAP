@@ -26,13 +26,40 @@ const DEMO_SELLERS = [
   { name: 'Kevin Lee', email: 'seed_kevin@graduate.utm.my', universityId: 'A23CS0106', averageRating: 4.6, ratingsCount: 7 },
 ];
 
-const CATEGORY_IMAGES = {
-  Textbooks: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80',
-  Electronics: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&auto=format&fit=crop&q=80',
-  Dorm: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600&auto=format&fit=crop&q=80',
-  Clothing: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80',
-  Services: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80',
-  Other: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=600&auto=format&fit=crop&q=80',
+const unsplash = (id) => `https://images.unsplash.com/${id}?w=600&auto=format&fit=crop&q=80`;
+
+const SUBCATEGORY_IMAGES = {
+  'Engineering Maths': unsplash('photo-1509228468518-180dd4864904'),
+  Calculus: unsplash('photo-1635070041078-e363dbe005cb'),
+  'Computer Science': unsplash('photo-1516321318423-f06f85e504b3'),
+  Physics: unsplash('photo-1497633762265-9d179a990aa6'),
+  Chemistry: unsplash('photo-1497633762265-9d179a990aa6'),
+  'Lecture Notes': unsplash('photo-1503676260728-1c00da094a0b'),
+  'Laptops & PC': unsplash('photo-1496181133206-80ce9b88a853'),
+  Monitors: unsplash('photo-1527443224154-c4a3942d3acf'),
+  'Keyboards & Mice': unsplash('photo-1527864550417-7fd91fc51a46'),
+  Calculators: unsplash('photo-1587145820266-a5951ee6f620'),
+  'Audio & Earphones': unsplash('photo-1505740420928-5e560c06d30e'),
+  'Chargers & Cables': unsplash('photo-1558618666-fcd25c85cd64'),
+  'Desk Lamps': unsplash('photo-1507473885765-e6ed057f782c'),
+  'Table Fans': unsplash('photo-1616627561839-074385245ff6'),
+  'Mattress & Bedding': unsplash('photo-1505693416388-ac5ce068fe85'),
+  'Storage & Racks': unsplash('photo-1594620302200-9a762244a156'),
+  'Kettles & Cookware': unsplash('photo-1556910103-1c02745aae4d'),
+  'UTM Corporate Polo': unsplash('photo-1521572267360-ee0c2909d518'),
+  'Baju Kurung': unsplash('photo-1594633312681-425c7b97ccd1'),
+  'Hoodies & Jackets': unsplash('photo-1551028719-00167b16eac5'),
+  'Sneakers & Shoes': unsplash('photo-1542291026-7eec264c27ff'),
+  'Bags & Backpacks': unsplash('photo-1553062407-98eeb64c6a62'),
+  'Printing & Binding': unsplash('photo-1562564055-71e051d33c19'),
+  'PC & Phone Repair': unsplash('photo-1581092160607-ee22621dd758'),
+  'Tutoring & Proofreading': unsplash('photo-1503676260728-1c00da094a0b'),
+  'Campus Carpool': unsplash('photo-1503376780353-7e6692767b70'),
+  'Event Photography': unsplash('photo-1516035069371-29a1b244cc32'),
+  'Campus Bicycles': unsplash('photo-1485965120184-e220f721d03e'),
+  'Badminton Rackets': unsplash('photo-1622279457486-62dcc4a431d6'),
+  'Football / Futsal': unsplash('photo-1579952363873-27f3bade9f55'),
+  'Gym & Fitness': unsplash('photo-1534438327276-14e5300c3a48'),
 };
 
 /**
@@ -610,7 +637,7 @@ async function seedCategories() {
           item.condition.toLowerCase(),
         ],
         viewsCount: (idx * 7) % 85 + 5,
-        images: [{ imageUrl: CATEGORY_IMAGES[group.category], displayOrder: 0 }],
+        images: [{ imageUrl: SUBCATEGORY_IMAGES[group.subcategory], displayOrder: 0 }],
         status: 'active',
       });
       idx++;
@@ -656,4 +683,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { seedCategories, SUBCATEGORY_DATA, DEMO_SELLERS, CATEGORY_IMAGES };
+module.exports = { seedCategories, SUBCATEGORY_DATA, DEMO_SELLERS, SUBCATEGORY_IMAGES };

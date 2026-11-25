@@ -2,7 +2,8 @@ const Listing = require('../models/Listing');
 const User = require('../models/User'); // 注册 User schema，确保 populate('sellerId') 能正常工作
 const cloudinary = require('../config/cloudinary');
 const { getPriceInsightForListing } = require('../utils/priceInsight');
-const { SUBCATEGORY_DATA, DEMO_SELLERS, CATEGORY_IMAGES } = require('../scripts/seedCategories');
+const { analyzeProductImage } = require('../utils/aiImageAnalyzer');
+const { SUBCATEGORY_DATA, DEMO_SELLERS, SUBCATEGORY_IMAGES } = require('../scripts/seedCategories');
 const { shuffleDiverse } = require('../utils/shuffleDiverse');
 
 // Helper to normalize category names across frontend and database
@@ -146,6 +147,71 @@ exports.getListingPriceInsight = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.analyzeImage = async (req, res) => {
+    try {
+        const { imageUrl, title, category, condition, price } = req.body || {};
+        if (!req.file && !imageUrl) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please upload an image or provide an imageUrl.',
+            });
+        }
+
+        const analysis = await analyzeProductImage({
+            buffer: req.file?.buffer,
+            mimeType: req.file?.mimetype,
+            imageUrl,
+            context: { title, category, condition, price },
+        });
+
+        res.json({ success: true, analysis });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message || 'AI image analysis failed',
+        });
+    }
+};
+
+exports.analyzeListingPhoto = async (req, res) => {
+    try {
+        const listing = await Listing.findById(req.params.id).lean();
+        if (!listing || listing.status === 'removed') {
+            return res.status(404).json({ success: false, message: 'Listing not found' });
+        }
+
+        const requestedUrl = req.body?.imageUrl;
+        const primaryUrl =
+            requestedUrl ||
+            listing.images?.[0]?.imageUrl ||
+            (typeof listing.images?.[0] === 'string' ? listing.images[0] : null);
+
+        if (!primaryUrl) {
+            return res.status(400).json({
+                success: false,
+                message: 'This listing has no photo to analyze.',
+            });
+        }
+
+        const analysis = await analyzeProductImage({
+            imageUrl: primaryUrl,
+            context: {
+                title: listing.title,
+                category: listing.category,
+                condition: listing.condition,
+                price: listing.price,
+            },
+        });
+
+        res.json({ success: true, analysis });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message || 'AI image analysis failed',
+        });
     }
 };
 
@@ -402,7 +468,7 @@ exports.seedSampleListings = async (req, res) => {
             item.condition.toLowerCase(),
           ],
           viewsCount: (idx * 7) % 85 + 5,
-          images: [{ imageUrl: CATEGORY_IMAGES[group.category], displayOrder: 0 }],
+          images: [{ imageUrl: SUBCATEGORY_IMAGES[group.subcategory], displayOrder: 0 }],
           status: 'active',
         });
         idx++;

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import MakeOfferModal from '../components/MakeOfferModal';
 import ServiceComments from '../components/ServiceComments';
 import PriceInsightCard from '../components/PriceInsightCard';
+import AiPhotoAnalysisCard from '../components/AiPhotoAnalysisCard';
 import { FALLBACK_ITEMS } from './Browse';
 import { recordView, fetchSimilarListings } from '../utils/viewHistory';
 import {
@@ -241,6 +242,15 @@ export default function ListingDetail() {
                             {listing.description || 'No additional description provided by the seller.'}
                         </p>
                     </div>
+
+                    <AiPhotoAnalysisCard
+                        listingId={listing._id || id}
+                        imageUrl={images[selectedImageIndex]}
+                        title={listing.title}
+                        category={listing.category}
+                        condition={listing.condition}
+                        price={listing.price}
+                    />
 
                     <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-5 flex items-start gap-3.5 text-blue-900">
                         <ShieldCheck className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
