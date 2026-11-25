@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import MakeOfferModal from '../components/MakeOfferModal';
+import ServiceComments from '../components/ServiceComments';
 import { FALLBACK_ITEMS } from './Browse';
 import { recordView, fetchSimilarListings } from '../utils/viewHistory';
 import {
@@ -240,6 +241,14 @@ export default function ListingDetail() {
                             </p>
                         </div>
                     </div>
+
+                    {listing.category === 'Services' && (
+                        <ServiceComments
+                            listingId={id}
+                            currentUserId={currentUserId}
+                            onRequireAuth={() => setShowAuthModal(true)}
+                        />
+                    )}
                 </div>
 
                 {/* 右侧：价格、行动栏与卖家卡片 */}
