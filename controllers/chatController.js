@@ -38,7 +38,10 @@ exports.getConversations = async (req, res) => {
       })
     );
 
-    res.json({ success: true, conversations: enriched });
+    // Only return conversations that have at least one message (hide empty chats)
+    const withMessages = enriched.filter((conv) => conv.lastMessage !== null);
+
+    res.json({ success: true, conversations: withMessages });
   } catch (error) {
     console.error('getConversations error:', error);
     res.status(500).json({ success: false, message: 'Failed to load conversations.' });
