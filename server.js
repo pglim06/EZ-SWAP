@@ -50,6 +50,7 @@ app.use('/api/listings', require('./routes/listingRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/transactions', require('./routes/transactionRoutes'));
 app.use('/api/reviews', require('./routes/reviewRoutes'));   // T15: Mutual Rating & Review System
+app.use('/api/bookmarks', require('./routes/bookmarkRoutes')); // T10: Bookmark & Wishlist System
 app.use('/api/admin', require('./routes/adminRoutes'));      // T16: Admin Dashboard & Moderation
 app.use('/api/chat', require('./routes/chatRoutes'));
 

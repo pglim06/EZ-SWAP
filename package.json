@@ -6,6 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "db:check": "node scripts/checkDb.js",
+    "db:restore-services": "node scripts/restoreServices.js",
+    "users": "node scripts/manageUsers.js",
     "test:db": "node scripts/testConnection.js",
     "test:auth": "node scripts/testAuth.js",
     "test:search": "node scripts/testSearchFilter.js",

@@ -242,12 +242,19 @@ exports.confirmHandover = async (req, res) => {
             transaction.sellerConfirmation === 'handed_over' &&
             transaction.buyerConfirmation === 'received';
 
+        let isServiceListing = false;
         if (isDualConfirmed) {
             transaction.status = 'completed';
             transaction.completedAt = new Date();
 
-            // 将对应 Listing 状态标记为已售出 'sold'
-            await Listing.findByIdAndUpdate(transaction.listingId, { status: 'sold' });
+            // 将对应 Listing 状态标记为已售出 'sold' (Services 服务类商品保持 'active'，供后续其他同学持续预订)
+            const targetListing = await Listing.findById(transaction.listingId);
+            isServiceListing = targetListing?.category === 'Services';
+            if (targetListing && !isServiceListing) {
+                await Listing.findByIdAndUpdate(transaction.listingId, { status: 'sold' });
+            } else if (isServiceListing) {
+                await Listing.findByIdAndUpdate(transaction.listingId, { status: 'active' });
+            }
         }
 
         await transaction.save();
@@ -264,7 +271,7 @@ exports.confirmHandover = async (req, res) => {
 
                 let chatContent = '';
                 if (isDualConfirmed) {
-                    chatContent = `🎉 [HANDOVER COMPLETED] Both seller and buyer have confirmed the handover!\n🔖 Transaction: ${transaction.transactionCode}\n✨ The item is now marked as SOLD. You may now leave a mutual rating & review!`;
+                    chatContent = `🎉 [HANDOVER COMPLETED] Both seller and buyer have confirmed the handover!\n🔖 Transaction: ${transaction.transactionCode}\n✨ ${isServiceListing ? 'The service remains available for future bookings' : 'The item is now marked as SOLD'}. You may now leave a mutual rating & review!`;
                 } else if (effectiveRole === 'seller') {
                     chatContent = `📦 [SELLER CONFIRMATION] The seller has confirmed item HANDOVER.\nBuyer, please inspect the item and confirm receipt to finalize this deal.`;
                 } else {

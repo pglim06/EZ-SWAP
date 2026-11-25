@@ -22,6 +22,9 @@ import AdminDashboard from './pages/AdminDashboard'
 function RequireAuthOrGuest({ children }) {
   const { user, isGuest, loading } = useAuth()
   if (loading) return null
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin" replace />
+  }
   if (!user && !isGuest) {
     return <Navigate to="/login" replace />
   }

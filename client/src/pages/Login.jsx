@@ -25,8 +25,12 @@ export default function Login() {
 
     try {
       setLoading(true)
-      await login(email, password)
-      navigate('/browse')
+      const data = await login(email, password)
+      if (data?.user?.role === 'admin') {
+        navigate('/admin')
+      } else {
+        navigate('/browse')
+      }
     } catch (err) {
       if (err.data?.requiresApproval) {
         setApprovalInfo(err.data)

@@ -335,9 +335,14 @@ exports.resolveDispute = async (req, res) => {
     if (status === 'completed') transaction.completedAt = new Date();
     await transaction.save();
 
-    // Update the listing status accordingly
+    // Update the listing status accordingly (Services remain 'active' for continued booking)
+    const targetListing = await Listing.findById(transaction.listingId);
     if (status === 'completed') {
-      await Listing.findByIdAndUpdate(transaction.listingId, { status: 'sold' });
+      if (targetListing && targetListing.category !== 'Services') {
+        await Listing.findByIdAndUpdate(transaction.listingId, { status: 'sold' });
+      } else if (targetListing && targetListing.category === 'Services') {
+        await Listing.findByIdAndUpdate(transaction.listingId, { status: 'active' });
+      }
     } else if (status === 'cancelled') {
       await Listing.findByIdAndUpdate(transaction.listingId, { status: 'active' });
     }

@@ -122,6 +122,7 @@ export default function Browse() {
   const [loading, setLoading] = useState(true)
   const [isUsingLiveDb, setIsUsingLiveDb] = useState(false)
   const [seeding, setSeeding] = useState(false)
+  const [bookmarkedIds, setBookmarkedIds] = useState(new Set())
 
   // Fetch listings from backend API
   const fetchListings = async () => {
@@ -205,6 +206,55 @@ export default function Browse() {
     }, 250)
     return () => clearTimeout(timer)
   }, [search, selectedCat, selectedCondition, minPrice, maxPrice, sort])
+
+  // Fetch user bookmarks when logged in
+  useEffect(() => {
+    if (user?._id) {
+      fetch('http://localhost:5000/api/bookmarks', { credentials: 'include' })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.bookmarkedListingIds) {
+            setBookmarkedIds(new Set(data.bookmarkedListingIds))
+          }
+        })
+        .catch(() => {})
+    } else {
+      setBookmarkedIds(new Set())
+    }
+  }, [user?._id])
+
+  const handleToggleBookmark = async (e, listingId) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!user?._id) {
+      navigate('/login')
+      return
+    }
+    const lid = listingId?.toString()
+    if (!lid) return
+    try {
+      const res = await fetch('http://localhost:5000/api/bookmarks/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ listingId: lid, userId: user._id }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setBookmarkedIds((prev) => {
+          const next = new Set(prev)
+          if (data.bookmarked) {
+            next.add(lid)
+          } else {
+            next.delete(lid)
+          }
+          return next
+        })
+      }
+    } catch (err) {
+      console.error('Error toggling bookmark:', err)
+    }
+  }
 
   // One-click seed demo listings to MongoDB Atlas
   const handleSeedDatabase = async () => {
@@ -517,8 +567,22 @@ export default function Browse() {
                           className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                         />
                       </Link>
-                      <button className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full text-slate-600 hover:text-red-500 transition cursor-pointer">
-                        <Heart className="w-4 h-4" />
+                      <button
+                        onClick={(e) => handleToggleBookmark(e, item._id || item.id)}
+                        className={`absolute top-3 right-3 p-2 backdrop-blur-sm rounded-full transition cursor-pointer ${
+                          bookmarkedIds.has((item._id || item.id)?.toString())
+                            ? 'bg-rose-50 text-rose-500 shadow-sm'
+                            : 'bg-white/80 text-slate-600 hover:text-rose-500'
+                        }`}
+                        title={bookmarkedIds.has((item._id || item.id)?.toString()) ? 'Saved in Wishlist' : 'Save to Wishlist'}
+                      >
+                        <Heart
+                          className={`w-4 h-4 ${
+                            bookmarkedIds.has((item._id || item.id)?.toString())
+                              ? 'fill-rose-500 text-rose-500'
+                              : ''
+                          }`}
+                        />
                       </button>
                       <span className="absolute bottom-3 left-3 text-[11px] font-semibold bg-slate-900/75 backdrop-blur-xs text-white px-2 py-0.5 rounded-md">
                         {item.condition === 'New' ? 'New' : 'Used'}

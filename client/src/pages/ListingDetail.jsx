@@ -20,6 +20,7 @@ import {
     Lock,
     Sparkles,
     Eye,
+    Heart,
 } from 'lucide-react';
 
 export default function ListingDetail() {
@@ -33,6 +34,8 @@ export default function ListingDetail() {
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showOfferModal, setShowOfferModal] = useState(false);
     const [similarListings, setSimilarListings] = useState([]);
+    const [isBookmarked, setIsBookmarked] = useState(false);
+    const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
     const { user } = useAuth();
     const currentUserId = user?._id || null;
@@ -79,8 +82,41 @@ export default function ListingDetail() {
         if (id) {
             fetchListing();
             loadSimilar();
+
+            if (currentUserId) {
+                fetch(`/api/bookmarks/check/${id}?userId=${currentUserId}`, { credentials: 'include' })
+                    .then((res) => (res.ok ? res.json() : null))
+                    .then((data) => {
+                        if (data) setIsBookmarked(!!data.isBookmarked);
+                    })
+                    .catch(() => {});
+            }
         }
     }, [id, currentUserId]);
+
+    const handleToggleBookmark = async () => {
+        if (!currentUserId) {
+            setShowAuthModal(true);
+            return;
+        }
+        try {
+            setBookmarkLoading(true);
+            const res = await fetch('/api/bookmarks/toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ listingId: id, userId: currentUserId }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setIsBookmarked(data.bookmarked);
+            }
+        } catch (err) {
+            console.error('Failed to toggle bookmark:', err);
+        } finally {
+            setBookmarkLoading(false);
+        }
+    };
 
     // 拦截 Guest 操作
     const handleActionClick = (actionName) => {
@@ -259,6 +295,21 @@ export default function ListingDetail() {
                         )}
 
                         <div className="pt-6 space-y-3">
+                            {!isOwner && (
+                                <button
+                                    onClick={handleToggleBookmark}
+                                    disabled={bookmarkLoading}
+                                    className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl border transition text-sm font-semibold cursor-pointer ${
+                                        isBookmarked
+                                            ? 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100'
+                                            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                                    }`}
+                                >
+                                    <Heart className={`w-4 h-4 ${isBookmarked ? 'fill-rose-500 text-rose-500' : 'text-slate-400'}`} />
+                                    {isBookmarked ? 'Saved in Wishlist' : 'Save to Wishlist'}
+                                </button>
+                            )}
+
                             {isOwner ? (
                                 <div className="space-y-2.5">
                                     <div className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg font-medium">

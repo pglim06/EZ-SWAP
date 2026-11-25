@@ -216,8 +216,11 @@ exports.acceptOrder = async (req, res) => {
             });
         }
 
-        // T13: Reserve listing so other users know a deal is in progress
-        await Listing.findByIdAndUpdate(order.listingId, { status: 'reserved' });
+        // T13: Reserve listing so other users know a deal is in progress (except for 'Services', which remain active for ongoing bookings)
+        const targetListing = await Listing.findById(order.listingId);
+        if (targetListing && targetListing.category !== 'Services') {
+            await Listing.findByIdAndUpdate(order.listingId, { status: 'reserved' });
+        }
 
         // 同步消息通知到私信对话 (通知交易已建立并附带唯一 Transaction ID)
         try {

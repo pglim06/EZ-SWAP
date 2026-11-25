@@ -20,70 +20,89 @@ export default function Navbar() {
     <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-xs">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
         {/* Logo and UTM Campus Badge */}
-        <Link to="/" className="flex items-center gap-2 group">
+        <Link to={user?.role === 'admin' ? '/admin' : '/'} className="flex items-center gap-2 group">
           <span className="text-2xl font-black text-blue-600 tracking-tight group-hover:text-blue-700 transition">
             EZ Swap
           </span>
-          <span className="text-xs bg-blue-50 text-blue-700 font-semibold px-2 py-0.5 rounded-full border border-blue-200">
-            UTM Campus
-          </span>
+          {user?.role === 'admin' ? (
+            <span className="text-xs bg-purple-50 text-purple-700 font-bold px-2 py-0.5 rounded-full border border-purple-200 flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3 text-purple-600" /> Admin Portal
+            </span>
+          ) : (
+            <span className="text-xs bg-blue-50 text-blue-700 font-semibold px-2 py-0.5 rounded-full border border-blue-200">
+              UTM Campus
+            </span>
+          )}
         </Link>
 
-        {/* Center links */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-          <Link to="/browse" className="hover:text-blue-600 transition flex items-center gap-1.5 font-semibold text-blue-600">
-            <ShoppingBag className="w-4 h-4" /> Marketplace Ads
-          </Link>
-          <Link to={user ? "/my-listings" : "/login"} className="hover:text-blue-600 transition">
-            My Listings
-          </Link>
-          {user && (
-            <Link to="/messages" className="hover:text-blue-600 transition relative flex items-center gap-1.5">
-              <MessageCircle className="w-4 h-4" />
-              Messages
-              {unreadCount > 0 && (
-                <span className="absolute -top-2 -right-3 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
+        {/* Center links: If admin, only show Admin Dashboard */}
+        {user?.role === 'admin' ? (
+          <nav className="flex items-center gap-6 text-sm font-medium text-slate-600">
+            <Link to="/admin" className="text-purple-600 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 border border-purple-200">
+              <ShieldCheck className="w-4 h-4 text-purple-600" /> Admin Dashboard
             </Link>
-          )}
-          {user && user.role === 'admin' && (
-            <Link to="/admin" className="hover:text-blue-600 transition flex items-center gap-1.5 text-purple-600 font-semibold">
-              <ShieldCheck className="w-4 h-4" /> Admin
+          </nav>
+        ) : (
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
+            <Link to="/browse" className="hover:text-blue-600 transition flex items-center gap-1.5 font-semibold text-blue-600">
+              <ShoppingBag className="w-4 h-4" /> Marketplace Ads
             </Link>
-          )}
-        </nav>
-
-        {/* Right side: Auth & Post Ad */}
-        <div className="flex items-center gap-3">
-          {user ? (
-            <div className="flex items-center gap-2">
-              {/* Mobile messages icon */}
-              <Link
-                to="/messages"
-                className="md:hidden relative flex items-center justify-center p-2 text-slate-500 hover:text-blue-600 transition"
-              >
-                <MessageCircle className="w-5 h-5" />
+            <Link to={user ? "/my-listings" : "/login"} className="hover:text-blue-600 transition">
+              My Listings
+            </Link>
+            {user && (
+              <Link to="/messages" className="hover:text-blue-600 transition relative flex items-center gap-1.5">
+                <MessageCircle className="w-4 h-4" />
+                Messages
                 {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  <span className="absolute -top-2 -right-3 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
               </Link>
+            )}
+          </nav>
+        )}
 
-              <Link
-                to={`/profile/${user._id}`}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 hover:text-blue-600 transition"
-              >
-                <span className={`w-2 h-2 rounded-full ${user.verificationStatus === 'verified' ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
-                <span className="max-w-[120px] truncate">{user.name || user.email}</span>
-                {user.verificationStatus === 'verified' ? (
-                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600" title="Verified UTM Student" />
-                ) : (
-                  <span className="text-[10px] bg-slate-200 text-slate-600 px-1 py-0.2 rounded">Unverified</span>
-                )}
-              </Link>
+        {/* Right side: Auth & Actions */}
+        <div className="flex items-center gap-3">
+          {user ? (
+            <div className="flex items-center gap-2">
+              {/* Only show student-specific messaging on mobile for non-admin */}
+              {user.role !== 'admin' && (
+                <Link
+                  to="/messages"
+                  className="md:hidden relative flex items-center justify-center p-2 text-slate-500 hover:text-blue-600 transition"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              )}
+
+              {user.role === 'admin' ? (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 border border-purple-200 text-xs font-semibold text-purple-800">
+                  <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
+                  <span className="max-w-[140px] truncate">{user.name || user.email}</span>
+                  <span className="text-[10px] bg-purple-200 text-purple-900 px-1.5 py-0.2 rounded font-bold uppercase">Admin</span>
+                </div>
+              ) : (
+                <Link
+                  to={`/profile/${user._id}`}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 hover:text-blue-600 transition"
+                >
+                  <span className={`w-2 h-2 rounded-full ${user.verificationStatus === 'verified' ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
+                  <span className="max-w-[120px] truncate">{user.name || user.email}</span>
+                  {user.verificationStatus === 'verified' ? (
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600" title="Verified UTM Student" />
+                  ) : (
+                    <span className="text-[10px] bg-slate-200 text-slate-600 px-1 py-0.2 rounded">Unverified</span>
+                  )}
+                </Link>
+              )}
 
               <button
                 onClick={() => setShowSignOutConfirm(true)}
@@ -116,12 +135,15 @@ export default function Navbar() {
             </div>
           )}
 
-          <Link
-            to={user ? "/create-listing" : "/login"}
-            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm hover:shadow transition"
-          >
-            <PlusCircle className="w-4 h-4" /> Post Free Ad
-          </Link>
+          {/* Do not show Post Ad button for Admin */}
+          {user?.role !== 'admin' && (
+            <Link
+              to={user ? "/create-listing" : "/login"}
+              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm hover:shadow transition"
+            >
+              <PlusCircle className="w-4 h-4" /> Post Free Ad
+            </Link>
+          )}
         </div>
       </div>
 
