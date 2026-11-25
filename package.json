@@ -11,7 +11,8 @@
     "test:search": "node scripts/testSearchFilter.js",
     "test:order": "node scripts/testOrder.js",
     "test:transaction": "node scripts/testTransaction.js",
-    "test:recommendation": "node scripts/testRecommendation.js"
+    "test:recommendation": "node scripts/testRecommendation.js",
+    "seed:categories": "node scripts/seedCategories.js"
   },
   "repository": {
     "type": "git",
