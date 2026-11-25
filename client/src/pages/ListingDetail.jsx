@@ -37,6 +37,8 @@ export default function ListingDetail() {
     const [similarListings, setSimilarListings] = useState([]);
     const [isBookmarked, setIsBookmarked] = useState(false);
     const [bookmarkLoading, setBookmarkLoading] = useState(false);
+    const [bookmarkMessage, setBookmarkMessage] = useState('');
+    const [bookmarkError, setBookmarkError] = useState(false);
 
     const { user } = useAuth();
     const currentUserId = user?._id || null;
@@ -100,6 +102,11 @@ export default function ListingDetail() {
             setShowAuthModal(true);
             return;
         }
+        const previous = isBookmarked;
+        setIsBookmarked(!previous);
+        setBookmarkMessage('');
+        setBookmarkError(false);
+
         try {
             setBookmarkLoading(true);
             const res = await fetch('/api/bookmarks/toggle', {
@@ -109,11 +116,13 @@ export default function ListingDetail() {
                 body: JSON.stringify({ listingId: id, userId: currentUserId }),
             });
             const data = await res.json();
-            if (res.ok) {
-                setIsBookmarked(data.bookmarked);
-            }
+            if (!res.ok) throw new Error(data.message || 'Could not update wishlist');
+            setIsBookmarked(data.bookmarked);
+            setBookmarkMessage(data.bookmarked ? 'Saved to your wishlist' : 'Removed from your wishlist');
         } catch (err) {
-            console.error('Failed to toggle bookmark:', err);
+            setIsBookmarked(previous);
+            setBookmarkError(true);
+            setBookmarkMessage(err.message || 'Could not update wishlist');
         } finally {
             setBookmarkLoading(false);
         }
@@ -317,6 +326,11 @@ export default function ListingDetail() {
                                     <Heart className={`w-4 h-4 ${isBookmarked ? 'fill-rose-500 text-rose-500' : 'text-slate-400'}`} />
                                     {isBookmarked ? 'Saved in Wishlist' : 'Save to Wishlist'}
                                 </button>
+                            )}
+                            {bookmarkMessage && (
+                                <p className={`text-[11px] font-medium text-center ${bookmarkError ? 'text-red-600' : 'text-rose-600'}`}>
+                                    {bookmarkMessage}
+                                </p>
                             )}
 
                             {isOwner ? (

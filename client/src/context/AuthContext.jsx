@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react'
 
 const AuthContext = createContext(null)
 
-const API_BASE = 'http://localhost:5000/api/auth'
+const API_BASE = `${import.meta.env.VITE_API_URL || ''}/api/auth`
 
 // Explicitly clean up any stale persisted accounts from previous runs
 try {

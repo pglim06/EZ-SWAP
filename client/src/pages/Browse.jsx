@@ -123,6 +123,7 @@ export default function Browse() {
   const [isUsingLiveDb, setIsUsingLiveDb] = useState(false)
   const [seeding, setSeeding] = useState(false)
   const [bookmarkedIds, setBookmarkedIds] = useState(new Set())
+  const [bookmarkError, setBookmarkError] = useState('')
 
   // Fetch listings from backend API
   const fetchListings = async () => {
@@ -210,7 +211,7 @@ export default function Browse() {
   // Fetch user bookmarks when logged in
   useEffect(() => {
     if (user?._id) {
-      fetch('http://localhost:5000/api/bookmarks', { credentials: 'include' })
+      fetch('/api/bookmarks', { credentials: 'include' })
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
           if (data?.bookmarkedListingIds) {
@@ -233,26 +234,26 @@ export default function Browse() {
     const lid = listingId?.toString()
     if (!lid) return
     try {
-      const res = await fetch('http://localhost:5000/api/bookmarks/toggle', {
+      const res = await fetch('/api/bookmarks/toggle', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ listingId: lid, userId: user._id }),
       })
       const data = await res.json()
-      if (res.ok) {
-        setBookmarkedIds((prev) => {
-          const next = new Set(prev)
-          if (data.bookmarked) {
-            next.add(lid)
-          } else {
-            next.delete(lid)
-          }
-          return next
-        })
-      }
+      if (!res.ok) throw new Error(data.message || 'Could not update wishlist')
+      setBookmarkError('')
+      setBookmarkedIds((prev) => {
+        const next = new Set(prev)
+        if (data.bookmarked) {
+          next.add(lid)
+        } else {
+          next.delete(lid)
+        }
+        return next
+      })
     } catch (err) {
-      console.error('Error toggling bookmark:', err)
+      setBookmarkError(err.message || 'Could not update wishlist')
     }
   }
 
@@ -532,6 +533,12 @@ export default function Browse() {
             </button>
           )}
         </div>
+
+        {bookmarkError && (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-medium text-red-700">
+            {bookmarkError}
+          </div>
+        )}
 
         {/* Loading state */}
         {loading && (

@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Bookmark = require('../models/Bookmark');
 const Listing = require('../models/Listing');
 
@@ -50,6 +51,9 @@ exports.toggleBookmark = async (req, res) => {
     if (!listingId) {
       return res.status(400).json({ message: 'listingId is required' });
     }
+    if (!mongoose.Types.ObjectId.isValid(listingId)) {
+      return res.status(400).json({ message: 'Invalid listing ID' });
+    }
 
     // Verify listing exists
     const listing = await Listing.findById(listingId);
@@ -93,6 +97,9 @@ exports.checkBookmark = async (req, res) => {
     const { listingId } = req.params;
 
     if (!userId) {
+      return res.json({ isBookmarked: false });
+    }
+    if (!mongoose.Types.ObjectId.isValid(listingId)) {
       return res.json({ isBookmarked: false });
     }
 
