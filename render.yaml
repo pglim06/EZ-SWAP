@@ -3,7 +3,7 @@ services:
     name: ez-swap
     runtime: node
     plan: free
-    buildCommand: npm install && npm --prefix client install && npm --prefix client run build
+    buildCommand: npm install && npm --prefix client install --include=dev && npm --prefix client run build
     startCommand: node server.js
     envVars:
       - key: NODE_ENV
