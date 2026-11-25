@@ -38,12 +38,76 @@ function createTransporter() {
 }
 
 /**
+ * Send email via Resend HTTPS API (if RESEND_API_KEY is set) or Nodemailer SMTP.
+ * HTTPS API is recommended on cloud hosts like Render free tier where outbound SMTP ports may be blocked.
+ */
+async function dispatchEmail({ to, subject, text, html, fallbackLabel, fallbackUrl }) {
+  const senderEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@ezswap.utm.my';
+  const fromAddress = process.env.EMAIL_FROM || `"EZ Swap UTM" <${senderEmail}>`;
+
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const resendFrom = process.env.EMAIL_FROM || 'EZ Swap UTM <onboarding@resend.dev>';
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: resendFrom,
+          to: [to],
+          subject,
+          text,
+          html,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        console.error(`❌ [RESEND ERROR] Failed to send email to ${to}:`, data);
+        return { success: false, error: data.message || 'Resend API error', email: to, realDelivery: false };
+      }
+      console.log(`✅ [EMAIL SENT via Resend] Delivered to ${to} (ID: ${data.id})`);
+      return { success: true, email: to, messageId: data.id, realDelivery: true };
+    } catch (err) {
+      console.error(`❌ [RESEND ERROR] Failed to send email to ${to}:`, err.message);
+      return { success: false, error: err.message, email: to, realDelivery: false };
+    }
+  }
+
+  const transporter = createTransporter();
+
+  if (transporter) {
+    try {
+      const info = await transporter.sendMail({
+        from: fromAddress,
+        to,
+        subject,
+        text,
+        html,
+      });
+      console.log(`✅ [EMAIL SENT] Delivered to ${to} (MessageID: ${info.messageId})`);
+      return { success: true, email: to, messageId: info.messageId, realDelivery: true };
+    } catch (err) {
+      console.error(`❌ [EMAIL ERROR] Failed to send email to ${to}:`, err.message);
+      return { success: false, error: err.message, email: to, realDelivery: false };
+    }
+  }
+
+  console.log('='.repeat(70));
+  console.log(`✉️ [${fallbackLabel}] (Configure RESEND_API_KEY or EMAIL_USER & EMAIL_PASS for real delivery)`);
+  console.log(`To: ${to}`);
+  console.log(`URL: ${fallbackUrl}`);
+  console.log('='.repeat(70));
+  return { success: true, email: to, verificationUrl: fallbackUrl, resetUrl: fallbackUrl, realDelivery: false };
+}
+
+/**
  * Send real verification email to recipient's inbox
  */
 async function sendVerificationEmail({ email, name, token, isUtmStudent }) {
-  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const clientUrl = process.env.CLIENT_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173';
   const verificationUrl = `${clientUrl}/verify-email?token=${token}`;
-  const senderEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@ezswap.utm.my';
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -99,41 +163,22 @@ async function sendVerificationEmail({ email, name, token, isUtmStudent }) {
     </html>
   `;
 
-  const transporter = createTransporter();
-
-  if (transporter) {
-    try {
-      const info = await transporter.sendMail({
-        from: `"EZ Swap UTM" <${senderEmail}>`,
-        to: email,
-        subject: 'Verify your EZ Swap UTM Account',
-        text: `Hello ${name}!\n\nPlease verify your email address for EZ Swap UTM by opening this link:\n${verificationUrl}\n\nThis link expires in 24 hours.`,
-        html: htmlContent,
-      });
-      console.log(`✅ [EMAIL SENT] Verification email delivered to ${email} (MessageID: ${info.messageId})`);
-      return { success: true, email, messageId: info.messageId, realDelivery: true };
-    } catch (err) {
-      console.error(`❌ [EMAIL ERROR] Failed to send email to ${email}:`, err.message);
-      return { success: false, error: err.message, email, realDelivery: false };
-    }
-  } else {
-    // If SMTP not yet configured in .env, log prominently in terminal
-    console.log('='.repeat(70));
-    console.log(`✉️ [SIMULATED EMAIL DISPATCH] (Configure EMAIL_USER & EMAIL_PASS in .env for real Gmail delivery)`);
-    console.log(`To: ${email}`);
-    console.log(`Verification URL: ${verificationUrl}`);
-    console.log('='.repeat(70));
-    return { success: true, email, verificationUrl, realDelivery: false };
-  }
+  return dispatchEmail({
+    to: email,
+    subject: 'Verify your EZ Swap UTM Account',
+    text: `Hello ${name}!\n\nPlease verify your email address for EZ Swap UTM by opening this link:\n${verificationUrl}\n\nThis link expires in 24 hours.`,
+    html: htmlContent,
+    fallbackLabel: 'SIMULATED EMAIL DISPATCH',
+    fallbackUrl: verificationUrl,
+  });
 }
 
 /**
  * Send real password reset email
  */
 async function sendPasswordResetEmail({ email, name, token }) {
-  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const clientUrl = process.env.CLIENT_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173';
   const resetUrl = `${clientUrl}/reset-password?token=${token}`;
-  const senderEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@ezswap.utm.my';
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -182,31 +227,14 @@ async function sendPasswordResetEmail({ email, name, token }) {
     </html>
   `;
 
-  const transporter = createTransporter();
-
-  if (transporter) {
-    try {
-      const info = await transporter.sendMail({
-        from: `"EZ Swap UTM" <${senderEmail}>`,
-        to: email,
-        subject: 'Reset your EZ Swap Password',
-        text: `Hello ${name}!\n\nReset your EZ Swap password here:\n${resetUrl}\n\nThis link expires in 1 hour.`,
-        html: htmlContent,
-      });
-      console.log(`✅ [EMAIL SENT] Password reset email delivered to ${email} (MessageID: ${info.messageId})`);
-      return { success: true, email, messageId: info.messageId, realDelivery: true };
-    } catch (err) {
-      console.error(`❌ [EMAIL ERROR] Failed to send reset email to ${email}:`, err.message);
-      return { success: false, error: err.message, email, realDelivery: false };
-    }
-  } else {
-    console.log('='.repeat(70));
-    console.log(`🔑 [PASSWORD RESET DISPATCH] (Configure EMAIL_USER & EMAIL_PASS in .env for real Gmail delivery)`);
-    console.log(`To: ${email}`);
-    console.log(`Reset URL: ${resetUrl}`);
-    console.log('='.repeat(70));
-    return { success: true, email, resetUrl, realDelivery: false };
-  }
+  return dispatchEmail({
+    to: email,
+    subject: 'Reset your EZ Swap Password',
+    text: `Hello ${name}!\n\nReset your EZ Swap password here:\n${resetUrl}\n\nThis link expires in 1 hour.`,
+    html: htmlContent,
+    fallbackLabel: 'PASSWORD RESET DISPATCH',
+    fallbackUrl: resetUrl,
+  });
 }
 
 module.exports = {
