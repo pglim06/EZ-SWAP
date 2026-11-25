@@ -48,6 +48,11 @@ export default function Navbar() {
               )}
             </Link>
           )}
+          {user && user.role === 'admin' && (
+            <Link to="/admin" className="hover:text-blue-600 transition flex items-center gap-1.5 text-purple-600 font-semibold">
+              <ShieldCheck className="w-4 h-4" /> Admin
+            </Link>
+          )}
         </nav>
 
         {/* Right side: Auth & Post Ad */}

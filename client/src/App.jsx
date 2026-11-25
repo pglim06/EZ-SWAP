@@ -16,6 +16,7 @@ import CategoryPage from './pages/CategoryPage'
 import Profile from './pages/Profile'
 import MyOrders from './pages/MyOrders'
 import Messages from './pages/Messages'
+import AdminDashboard from './pages/AdminDashboard'
 
 // Guard that ensures user has either logged in or chosen "Continue as Guest"
 function RequireAuthOrGuest({ children }) {
@@ -145,6 +146,16 @@ export default function App() {
                   <RequireAuthOrGuest>
                     <Profile />
                   </RequireAuthOrGuest>
+                }
+              />
+
+              {/* T16: Admin Dashboard & Moderation Portal */}
+              <Route
+                path="/admin"
+                element={
+                  <RequireRegisteredUser>
+                    <AdminDashboard />
+                  </RequireRegisteredUser>
                 }
               />
             </Routes>
