@@ -135,10 +135,15 @@ export default function ListingDetail() {
         );
     }
 
-    const seller = listing.sellerId || {};
-    const isOwner = currentUserId && seller._id === currentUserId;
-    const images = listing.images && listing.images.length > 0
-        ? listing.images.map((img) => img.imageUrl)
+    const seller = typeof listing.sellerId === 'object' && listing.sellerId !== null
+        ? listing.sellerId
+        : { _id: listing.sellerId, name: listing.seller || 'Campus Seller' };
+    const isOwner = currentUserId && (seller._id === currentUserId || listing.sellerId === currentUserId);
+    const rawImages = listing.images && listing.images.length > 0
+        ? listing.images.map((img) => (typeof img === 'string' ? img : img?.imageUrl || '')).filter(Boolean)
+        : [];
+    const images = rawImages.length > 0
+        ? rawImages
         : ['https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop&q=60'];
 
     return (
@@ -457,7 +462,7 @@ export default function ListingDetail() {
                 isOpen={showOfferModal}
                 onClose={() => setShowOfferModal(false)}
                 listing={listing}
-                currentUser={effectiveUser}
+                currentUser={user}
                 onOfferSuccess={(order) => {
                     setShowOfferModal(false);
                     navigate(`/messages?listingId=${id}`);
