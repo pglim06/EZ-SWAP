@@ -61,7 +61,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'UTM Arked Meranti',
     sellerId: { name: 'Ahmad Faris', averageRating: 4.9, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse2.mm.bing.net/th/id/OIP.oVtnHa8G7Rg2ndOigO_ImQAAAA?w=182?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=60' }],
   },
   {
     _id: 'sample-2',
@@ -71,7 +71,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'UTM Library (PSZ)',
     sellerId: { name: 'Sarah Tan', averageRating: 5.0, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse2.mm.bing.net/th/id/OIP.0CAAxnSifNwuRebmPp0qyQHaEK?w=317?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1532012164546-f432f2e3edd4?w=500&auto=format&fit=crop&q=60' }],
   },
   {
     _id: 'sample-3',
@@ -81,7 +81,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'Faculty of Computing (FC)',
     sellerId: { name: 'Kevin Lee', averageRating: 4.8, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse1.mm.bing.net/th/id/OIP.r-kAo3clfH1y9w5-NyuQOgHaD8?w=342?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&auto=format&fit=crop&q=60' }],
   },
   {
     _id: 'sample-4',
@@ -91,7 +91,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'Kolej Tun Dr Ismail (KTDI)',
     sellerId: { name: 'Wei Ming', averageRating: 4.8, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse3.mm.bing.net/th/id/OIP.yKAzc7bM1BNnui9FzZk3kgHaHa?w=200?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=500&auto=format&fit=crop&q=60' }],
   },
 
   // ── Electronics ──
@@ -103,7 +103,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'Kolej Rahman Putra (KRP)',
     sellerId: { name: 'Sarah Tan', averageRating: 5.0, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse3.mm.bing.net/th/id/OIP.7yPdX5chW15-O6Pa29jQLwHaEo?w=316?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=500&auto=format&fit=crop&q=60' }],
   },
   {
     _id: 'sample-6',
@@ -113,7 +113,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'UTM Arked Meranti',
     sellerId: { name: 'Ahmad Faris', averageRating: 4.9, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse2.mm.bing.net/th/id/OIP.Oz5bZVFJ5hxXbd165icJCwHaHa?w=184?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=500&auto=format&fit=crop&q=60' }],
   },
   {
     _id: 'sample-7',
@@ -123,7 +123,7 @@ export const FALLBACK_ITEMS = [
     condition: 'New',
     location: 'KDSE / KRP Dorms',
     sellerId: { name: 'Hafiz Azman', averageRating: 4.9, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse3.mm.bing.net/th/id/OIP.A7mQqyLCMKQZc1Ie7Moj7QHaFj?w=231?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=500&auto=format&fit=crop&q=60' }],
   },
   {
     _id: 'sample-8',
@@ -133,7 +133,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'Kolej Perdana (KP)',
     sellerId: { name: 'Kevin Lee', averageRating: 4.8, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse4.mm.bing.net/th/id/OIP.F0nTcUeGAsFKWdwX3VhIZQHaFj?w=210?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500&auto=format&fit=crop&q=60' }],
   },
 
   // ── Dorm Essentials ──
@@ -145,7 +145,7 @@ export const FALLBACK_ITEMS = [
     condition: 'New',
     location: 'Kolej Tun Dr Ismail (KTDI)',
     sellerId: { name: 'Wei Ming', averageRating: 4.8, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse1.mm.bing.net/th/id/OIP.g7POohtdvuwfMR22w1dq9gHaGd?w=228?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=500&auto=format&fit=crop&q=60' }],
   },
   {
     _id: 'sample-10',
@@ -155,7 +155,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'KDSE Dorms',
     sellerId: { name: 'Nurul Huda', averageRating: 4.7, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse4.mm.bing.net/th/id/OIP.vxYYcLmb7yu_qOzc6-QN3QHaHa?w=184?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1618941716939-553df3c6c278?w=500&auto=format&fit=crop&q=60' }],
   },
   {
     _id: 'sample-11',
@@ -165,7 +165,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'Kolej Rahman Putra (KRP)',
     sellerId: { name: 'Sarah Tan', averageRating: 5.0, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse3.mm.bing.net/th/id/OIP.Nk8HsATDjJOFwrOla60xeAHaEc?w=322?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1540518614846-7ede433c4ef3?w=500&auto=format&fit=crop&q=60' }],
   },
   {
     _id: 'sample-12',
@@ -187,7 +187,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'UTM FABU Building',
     sellerId: { name: 'Nurul Huda', averageRating: 4.7, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse4.mm.bing.net/th/id/OIP.OKIgfsdmu3cFuI0qn0GM1QHaFj?w=267?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&auto=format&fit=crop&q=60' }],
   },
   {
     _id: 'sample-14',
@@ -197,7 +197,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'Faculty of Computing',
     sellerId: { name: 'Ahmad Faris', averageRating: 4.9, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse2.mm.bing.net/th/id/OIP.h_-JmEkMipCPtRCJiC2YdAHaHa?w=197?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=500&auto=format&fit=crop&q=60' }],
   },
   {
     _id: 'sample-15',
@@ -207,7 +207,7 @@ export const FALLBACK_ITEMS = [
     condition: 'New',
     location: 'Arked Cengal',
     sellerId: { name: 'Hafiz Azman', averageRating: 4.9, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse4.mm.bing.net/th/id/OIP.52dQ6s3ou0mWDeuOuI84BQHaFj?w=267?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&auto=format&fit=crop&q=60' }],
   },
   {
     _id: 'sample-16',
@@ -217,7 +217,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'UTM Stadium / Sports Hall',
     sellerId: { name: 'Kevin Lee', averageRating: 4.8, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse4.mm.bing.net/th/id/OIP.oe7rKqUGm7gimPO5trrNNQHaHa?w=167?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&auto=format&fit=crop&q=60' }],
   },
 
   // ── Campus Services ──
@@ -229,7 +229,7 @@ export const FALLBACK_ITEMS = [
     condition: 'New',
     location: 'UTM Lingkaran Ilmu',
     sellerId: { name: 'Kevin Lee', averageRating: 5.0, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse2.mm.bing.net/th/id/OIP.m2cUB1q-CVQEOAQvX_TIuAHaEK?w=333?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=60' }],
   },
   {
     _id: 'sample-18',
@@ -239,7 +239,7 @@ export const FALLBACK_ITEMS = [
     condition: 'New',
     location: 'UTM Arked Meranti Printing Shop',
     sellerId: { name: 'Ahmad Faris', averageRating: 4.9, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse4.mm.bing.net/th/id/OIP.-dDL2qy7p2CyS6jRW0yEPQAAAA?w=173?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=500&auto=format&fit=crop&q=60' }],
   },
   {
     _id: 'sample-19',
@@ -249,7 +249,7 @@ export const FALLBACK_ITEMS = [
     condition: 'New',
     location: 'UTM Main Gate Pickup',
     sellerId: { name: 'Hafiz Azman', averageRating: 4.9, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse2.mm.bing.net/th/id/OIP.8BOJc_0NtiGi-s0_K7OcgQHaHa?w=190?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=500&auto=format&fit=crop&q=60' }],
   },
 
   // ── Bikes & Sports ──
@@ -261,7 +261,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'Kolej Perdana (KP)',
     sellerId: { name: 'Hafiz Azman', averageRating: 4.9, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse4.mm.bing.net/th/id/OIP.bYykzj3NanEA-YNRPcYVqQHaCt?w=312?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=500&auto=format&fit=crop&q=60' }],
   },
   {
     _id: 'sample-21',
@@ -271,7 +271,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'UTM Sports Complex',
     sellerId: { name: 'Sarah Tan', averageRating: 5.0, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse3.mm.bing.net/th/id/OIP.zlFzEFM2Lat03_nUaBeqkgHaCi?w=349?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=500&auto=format&fit=crop&q=60' }],
   },
   {
     _id: 'sample-22',
@@ -281,7 +281,7 @@ export const FALLBACK_ITEMS = [
     condition: 'Used',
     location: 'Padang UTM',
     sellerId: { name: 'Ahmad Faris', averageRating: 4.9, verificationStatus: 'verified' },
-    images: [{ imageUrl: 'https://tse4.mm.bing.net/th/id/OIP.vAYN2n-M8qoGR4ACgZZQVAHaLH?w=190?w=600&h=450&c=7&rs=1&p=0' }],
+    images: [{ imageUrl: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=500&auto=format&fit=crop&q=60' }],
   },
 ]
 

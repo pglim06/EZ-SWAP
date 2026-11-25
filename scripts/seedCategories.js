@@ -16,7 +16,6 @@ dns.setServers(['8.8.8.8', '1.1.1.1']);
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Listing = require('../models/Listing');
-const PRODUCT_IMAGES = require('./productImages.json');
 
 const DEMO_SELLERS = [
   { name: 'Ahmad Faris', email: 'seed_ahmad@graduate.utm.my', universityId: 'A23CS0101', averageRating: 4.9, ratingsCount: 18 },
@@ -638,7 +637,7 @@ async function seedCategories() {
           item.condition.toLowerCase(),
         ],
         viewsCount: (idx * 7) % 85 + 5,
-        images: [{ imageUrl: PRODUCT_IMAGES[item.title] || SUBCATEGORY_IMAGES[group.subcategory] || CATEGORY_IMAGES[group.category], displayOrder: 0 }],
+        images: [{ imageUrl: SUBCATEGORY_IMAGES[group.subcategory], displayOrder: 0 }],
         status: 'active',
       });
       idx++;
@@ -684,4 +683,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { seedCategories, SUBCATEGORY_DATA, DEMO_SELLERS, SUBCATEGORY_IMAGES, PRODUCT_IMAGES };
+module.exports = { seedCategories, SUBCATEGORY_DATA, DEMO_SELLERS, SUBCATEGORY_IMAGES };

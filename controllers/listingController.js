@@ -3,7 +3,7 @@ const User = require('../models/User'); // 注册 User schema，确保 populate(
 const cloudinary = require('../config/cloudinary');
 const { getPriceInsightForListing } = require('../utils/priceInsight');
 const { analyzeProductImage } = require('../utils/aiImageAnalyzer');
-const { SUBCATEGORY_DATA, DEMO_SELLERS, SUBCATEGORY_IMAGES, PRODUCT_IMAGES } = require('../scripts/seedCategories');
+const { SUBCATEGORY_DATA, DEMO_SELLERS, SUBCATEGORY_IMAGES } = require('../scripts/seedCategories');
 const { shuffleDiverse } = require('../utils/shuffleDiverse');
 
 // Helper to normalize category names across frontend and database
@@ -499,7 +499,7 @@ exports.seedSampleListings = async (req, res) => {
             item.condition.toLowerCase(),
           ],
           viewsCount: (idx * 7) % 85 + 5,
-          images: [{ imageUrl: (PRODUCT_IMAGES && PRODUCT_IMAGES[item.title]) || SUBCATEGORY_IMAGES[group.subcategory], displayOrder: 0 }],
+          images: [{ imageUrl: SUBCATEGORY_IMAGES[group.subcategory], displayOrder: 0 }],
           status: 'active',
         });
         idx++;
