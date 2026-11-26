@@ -104,6 +104,12 @@ export default function Messages() {
         const data = await res.json()
         if (data.success && data.conversation) {
           await fetchConversations()
+          setConversations((prev) => {
+            const exists = prev.some((c) => c._id === data.conversation._id)
+            return exists
+              ? prev
+              : [{ ...data.conversation, unreadCount: 0, lastMessage: null }, ...prev]
+          })
           setActiveConvId(data.conversation._id)
           setShowSidebar(false)
         }
