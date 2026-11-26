@@ -38,12 +38,43 @@ function createTransporter() {
 }
 
 /**
- * Send email via Resend HTTPS API (if RESEND_API_KEY is set) or Nodemailer SMTP.
- * HTTPS API is recommended on cloud hosts like Render free tier where outbound SMTP ports may be blocked.
+ * Send email via Brevo / Resend HTTPS API (if configured) or Nodemailer SMTP.
+ * HTTPS APIs are recommended on cloud hosts like Render free tier where outbound SMTP ports may be blocked.
  */
 async function dispatchEmail({ to, subject, text, html, fallbackLabel, fallbackUrl }) {
   const senderEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@ezswap.utm.my';
   const fromAddress = process.env.EMAIL_FROM || `"EZ Swap UTM" <${senderEmail}>`;
+
+  if (process.env.BREVO_API_KEY) {
+    try {
+      const brevoSenderEmail = process.env.EMAIL_FROM_ADDRESS || process.env.EMAIL_USER || senderEmail;
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': process.env.BREVO_API_KEY,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          sender: { name: 'EZ Swap UTM', email: brevoSenderEmail },
+          to: [{ email: to }],
+          subject,
+          textContent: text,
+          htmlContent: html,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        console.error(`❌ [BREVO ERROR] Failed to send email to ${to}:`, data);
+        return { success: false, error: data.message || 'Brevo API error', email: to, realDelivery: false };
+      }
+      console.log(`✅ [EMAIL SENT via Brevo] Delivered to ${to} (MessageID: ${data.messageId})`);
+      return { success: true, email: to, messageId: data.messageId, realDelivery: true };
+    } catch (err) {
+      console.error(`❌ [BREVO ERROR] Failed to send email to ${to}:`, err.message);
+      return { success: false, error: err.message, email: to, realDelivery: false };
+    }
+  }
 
   if (process.env.RESEND_API_KEY) {
     try {
