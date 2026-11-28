@@ -170,6 +170,9 @@ export default function App() {
                   </RequireRegisteredUser>
                 }
               />
+
+              {/* Fallback for unmatched paths (prevents blank page) */}
+              <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           </div>
         </BrowserRouter>

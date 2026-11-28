@@ -16,7 +16,7 @@ export default function Register() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [resending, setResending] = useState(false)
-  const [resendMessage, setResendMessage] = useState('')
+  const [resendStatus, setResendStatus] = useState(null)
   const [registrationResult, setRegistrationResult] = useState(null)
 
   const handleChange = (e) => {
@@ -62,11 +62,17 @@ export default function Register() {
     if (!registrationResult?.email) return
     try {
       setResending(true)
-      setResendMessage('')
+      setResendStatus(null)
       const res = await resendVerification(registrationResult.email)
-      setResendMessage(res.message || 'Verification email resent successfully.')
+      setResendStatus({
+        type: 'success',
+        text: res.message || 'Verification email resent successfully.',
+      })
     } catch (err) {
-      setResendMessage(err.message || 'Failed to resend verification email.')
+      setResendStatus({
+        type: 'error',
+        text: err.message || 'Failed to resend verification email.',
+      })
     } finally {
       setResending(false)
     }
@@ -127,8 +133,10 @@ export default function Register() {
             </button>
           </div>
 
-          {resendMessage && (
-            <p className="text-xs text-emerald-600 font-medium mb-4">{resendMessage}</p>
+          {resendStatus && (
+            <p className={`text-xs font-medium mb-4 ${resendStatus.type === 'error' ? 'text-red-600' : 'text-emerald-600'}`}>
+              {resendStatus.text}
+            </p>
           )}
 
           <div className="pt-2 border-t border-slate-100">

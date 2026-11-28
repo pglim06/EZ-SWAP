@@ -9,12 +9,24 @@ function generateToken() {
 }
 
 /**
+ * Resolve the primary frontend URL for email links (handles comma-separated CLIENT_URL)
+ */
+function getClientBaseUrl() {
+  const rawClientUrl = (process.env.CLIENT_URL || '')
+    .split(',')
+    .map((u) => u.trim())
+    .find(Boolean);
+  const baseUrl = rawClientUrl || (process.env.RENDER_EXTERNAL_URL || '').trim() || 'http://localhost:5173';
+  return baseUrl.replace(/\/+$/, '');
+}
+
+/**
  * Create and configure nodemailer transporter
  */
 function createTransporter() {
-  const user = process.env.EMAIL_USER || process.env.SMTP_USER;
-  const pass = process.env.EMAIL_PASS || process.env.SMTP_PASS;
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const user = (process.env.EMAIL_USER || process.env.SMTP_USER || '').trim();
+  const pass = (process.env.EMAIL_PASS || process.env.SMTP_PASS || '').trim();
+  const host = (process.env.SMTP_HOST || 'smtp.gmail.com').trim();
   const port = Number(process.env.SMTP_PORT) || 465;
 
   if (!user || !pass) {
@@ -34,99 +46,134 @@ function createTransporter() {
       user,
       pass,
     },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
   });
 }
 
+async function sendViaBrevo({ to, subject, text, html, brevoSenderEmail }) {
+  const apiKey = (process.env.BREVO_API_KEY || '').trim();
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': apiKey,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({
+      sender: { name: 'EZ Swap UTM', email: brevoSenderEmail },
+      to: [{ email: to }],
+      subject,
+      textContent: text,
+      htmlContent: html,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || `Brevo API error (${res.status})`);
+  }
+  console.log(`✅ [EMAIL SENT via Brevo] Delivered to ${to} (MessageID: ${data.messageId})`);
+  return { success: true, email: to, messageId: data.messageId, provider: 'brevo', realDelivery: true };
+}
+
+async function sendViaResend({ to, subject, text, html }) {
+  const apiKey = (process.env.RESEND_API_KEY || '').trim();
+  const resendFrom = (process.env.EMAIL_FROM || 'EZ Swap UTM <onboarding@resend.dev>').trim();
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: resendFrom,
+      to: [to],
+      subject,
+      text,
+      html,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || `Resend API error (${res.status})`);
+  }
+  console.log(`✅ [EMAIL SENT via Resend] Delivered to ${to} (ID: ${data.id})`);
+  return { success: true, email: to, messageId: data.id, provider: 'resend', realDelivery: true };
+}
+
+async function sendViaSmtp({ to, subject, text, html, fromAddress }) {
+  const transporter = createTransporter();
+  if (!transporter) return null;
+  const info = await transporter.sendMail({
+    from: fromAddress,
+    to,
+    subject,
+    text,
+    html,
+  });
+  console.log(`✅ [EMAIL SENT via SMTP] Delivered to ${to} (MessageID: ${info.messageId})`);
+  return { success: true, email: to, messageId: info.messageId, provider: 'smtp', realDelivery: true };
+}
+
 /**
- * Send email via Brevo / Resend HTTPS API (if configured) or Nodemailer SMTP.
+ * Send email via Brevo / Resend HTTPS API (if configured) with automatic fallback to Nodemailer SMTP.
  * HTTPS APIs are recommended on cloud hosts like Render free tier where outbound SMTP ports may be blocked.
  */
 async function dispatchEmail({ to, subject, text, html, fallbackLabel, fallbackUrl }) {
-  const senderEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@ezswap.utm.my';
-  const fromAddress = process.env.EMAIL_FROM || `"EZ Swap UTM" <${senderEmail}>`;
+  const senderEmail = (process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@ezswap.utm.my').trim();
+  const fromAddress = (process.env.EMAIL_FROM || `"EZ Swap UTM" <${senderEmail}>`).trim();
+  const brevoSenderEmail = (process.env.EMAIL_FROM_ADDRESS || process.env.EMAIL_USER || senderEmail).trim();
 
-  if (process.env.BREVO_API_KEY) {
+  const errors = [];
+  let attemptedProvider = false;
+
+  if ((process.env.BREVO_API_KEY || '').trim()) {
+    attemptedProvider = true;
     try {
-      const brevoSenderEmail = process.env.EMAIL_FROM_ADDRESS || process.env.EMAIL_USER || senderEmail;
-      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'api-key': process.env.BREVO_API_KEY,
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          sender: { name: 'EZ Swap UTM', email: brevoSenderEmail },
-          to: [{ email: to }],
-          subject,
-          textContent: text,
-          htmlContent: html,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        console.error(`❌ [BREVO ERROR] Failed to send email to ${to}:`, data);
-        return { success: false, error: data.message || 'Brevo API error', email: to, realDelivery: false };
-      }
-      console.log(`✅ [EMAIL SENT via Brevo] Delivered to ${to} (MessageID: ${data.messageId})`);
-      return { success: true, email: to, messageId: data.messageId, realDelivery: true };
+      return await sendViaBrevo({ to, subject, text, html, brevoSenderEmail });
     } catch (err) {
       console.error(`❌ [BREVO ERROR] Failed to send email to ${to}:`, err.message);
-      return { success: false, error: err.message, email: to, realDelivery: false };
+      errors.push(`Brevo: ${err.message}`);
     }
   }
 
-  if (process.env.RESEND_API_KEY) {
+  if ((process.env.RESEND_API_KEY || '').trim()) {
+    attemptedProvider = true;
     try {
-      const resendFrom = process.env.EMAIL_FROM || 'EZ Swap UTM <onboarding@resend.dev>';
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: resendFrom,
-          to: [to],
-          subject,
-          text,
-          html,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        console.error(`❌ [RESEND ERROR] Failed to send email to ${to}:`, data);
-        return { success: false, error: data.message || 'Resend API error', email: to, realDelivery: false };
-      }
-      console.log(`✅ [EMAIL SENT via Resend] Delivered to ${to} (ID: ${data.id})`);
-      return { success: true, email: to, messageId: data.id, realDelivery: true };
+      return await sendViaResend({ to, subject, text, html });
     } catch (err) {
       console.error(`❌ [RESEND ERROR] Failed to send email to ${to}:`, err.message);
-      return { success: false, error: err.message, email: to, realDelivery: false };
+      errors.push(`Resend: ${err.message}`);
     }
   }
 
-  const transporter = createTransporter();
+  const hasSmtpConfig =
+    Boolean((process.env.EMAIL_USER || process.env.SMTP_USER || '').trim()) &&
+    Boolean((process.env.EMAIL_PASS || process.env.SMTP_PASS || '').trim());
 
-  if (transporter) {
+  if (hasSmtpConfig) {
+    attemptedProvider = true;
     try {
-      const info = await transporter.sendMail({
-        from: fromAddress,
-        to,
-        subject,
-        text,
-        html,
-      });
-      console.log(`✅ [EMAIL SENT] Delivered to ${to} (MessageID: ${info.messageId})`);
-      return { success: true, email: to, messageId: info.messageId, realDelivery: true };
+      const smtpResult = await sendViaSmtp({ to, subject, text, html, fromAddress });
+      if (smtpResult) return smtpResult;
     } catch (err) {
-      console.error(`❌ [EMAIL ERROR] Failed to send email to ${to}:`, err.message);
-      return { success: false, error: err.message, email: to, realDelivery: false };
+      console.error(`❌ [SMTP ERROR] Failed to send email to ${to}:`, err.message);
+      errors.push(`SMTP: ${err.message}`);
     }
+  }
+
+  if (attemptedProvider) {
+    return {
+      success: false,
+      error: errors.join(' | ') || 'All configured email providers failed.',
+      email: to,
+      realDelivery: false,
+    };
   }
 
   console.log('='.repeat(70));
-  console.log(`✉️ [${fallbackLabel}] (Configure RESEND_API_KEY or EMAIL_USER & EMAIL_PASS for real delivery)`);
+  console.log(`✉️ [${fallbackLabel}] (Configure BREVO_API_KEY, RESEND_API_KEY, or EMAIL_USER & EMAIL_PASS for real delivery)`);
   console.log(`To: ${to}`);
   console.log(`URL: ${fallbackUrl}`);
   console.log('='.repeat(70));
@@ -137,7 +184,7 @@ async function dispatchEmail({ to, subject, text, html, fallbackLabel, fallbackU
  * Send real verification email to recipient's inbox
  */
 async function sendVerificationEmail({ email, name, token, isUtmStudent }) {
-  const clientUrl = process.env.CLIENT_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173';
+  const clientUrl = getClientBaseUrl();
   const verificationUrl = `${clientUrl}/verify-email?token=${token}`;
 
   const htmlContent = `
@@ -208,7 +255,7 @@ async function sendVerificationEmail({ email, name, token, isUtmStudent }) {
  * Send real password reset email
  */
 async function sendPasswordResetEmail({ email, name, token }) {
-  const clientUrl = process.env.CLIENT_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173';
+  const clientUrl = getClientBaseUrl();
   const resetUrl = `${clientUrl}/reset-password?token=${token}`;
 
   const htmlContent = `

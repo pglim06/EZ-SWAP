@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { CheckCircle2, XCircle, Loader2, ArrowRight } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
@@ -8,6 +8,7 @@ export default function VerifyEmail() {
   const token = searchParams.get('token')
   const navigate = useNavigate()
   const { verifyEmail } = useAuth()
+  const attemptedRef = useRef(false)
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -20,6 +21,9 @@ export default function VerifyEmail() {
       setLoading(false)
       return
     }
+
+    if (attemptedRef.current) return
+    attemptedRef.current = true
 
     const approve = async () => {
       try {

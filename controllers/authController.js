@@ -117,13 +117,22 @@ exports.register = async (req, res) => {
       role: 'student',
     });
 
-    // 9. Send verification email via SMTP to actual inbox
+    // 9. Send verification email to actual inbox
     const emailResult = await sendVerificationEmail({
       email: normalizedEmail,
       name: user.name,
       token: verificationToken,
       isUtmStudent: emailCheck.isUtmStudent,
     });
+
+    if (!emailResult.success) {
+      await User.findByIdAndDelete(user._id);
+      return res.status(502).json({
+        success: false,
+        message: 'Could not send verification email. Please check email service configuration or try again later.',
+        error: emailResult.error,
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -230,6 +239,14 @@ exports.resendVerification = async (req, res) => {
       token: verificationToken,
       isUtmStudent: isUtm,
     });
+
+    if (!emailResult.success) {
+      return res.status(502).json({
+        success: false,
+        message: 'Failed to resend verification email. Please try again later.',
+        error: emailResult.error,
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -342,6 +359,17 @@ exports.forgotPassword = async (req, res) => {
       name: user.name,
       token: resetToken,
     });
+
+    if (!emailResult.success) {
+      user.resetPasswordToken = null;
+      user.resetPasswordExpires = null;
+      await user.save();
+      return res.status(502).json({
+        success: false,
+        message: 'Failed to send password reset email. Please try again later.',
+        error: emailResult.error,
+      });
+    }
 
     res.status(200).json({
       success: true,
